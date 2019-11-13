@@ -71,11 +71,20 @@ bool savePLY(
         const sfmData::Landmarks& landmarks = sfmData.getLandmarks();
         for (sfmData::Landmarks::const_iterator iterLandmarks = landmarks.begin();
           iterLandmarks != landmarks.end();
-          ++iterLandmarks)  {
-          stream << iterLandmarks->second.X.transpose() << " "
-                 << (int)iterLandmarks->second.rgb.r() << " "
-                 << (int)iterLandmarks->second.rgb.g() << " "
-                 << (int)iterLandmarks->second.rgb.b() << "\n";
+          ++iterLandmarks)
+		{
+			  stream << iterLandmarks->second.X.transpose() << " "
+					 << (int)iterLandmarks->second.rgb.r() << " "
+					 << (int)iterLandmarks->second.rgb.g() << " "
+					 << (int)iterLandmarks->second.rgb.b() << " ";
+          
+			//iterates over all landmarks prints out the observationID to the line end
+			for(const auto& obsPair : iterLandmarks->second.observations)
+            {
+                stream << obsPair.first << " ";
+			}
+			//end of line 
+			stream << "\n";
         }
       }
       stream.flush();
