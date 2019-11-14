@@ -28,7 +28,9 @@ public:
   explicit CameraPose(const geometry::Pose3& transform, bool locked = false)
     : _transform(transform)
     , _locked(locked)
-  {}
+  {
+
+  }
 
   /**
    * @brief Get the 3d transformation of the camera
@@ -46,6 +48,11 @@ public:
   inline bool isLocked() const
   {
     return _locked;
+  }
+
+  inline double GetRMSE() const 
+  {
+      return m_RMSE;
   }
 
   /**
@@ -82,11 +89,25 @@ public:
     _locked  = false;
   }
 
+  inline void SetRSME(double& rmse)
+  { 
+      m_RMSE = rmse;
+      m_RMSECalculated = true;
+  }
+
+  inline double& GetRMSE()
+  {
+      return m_RMSE;
+  } 
+
 private:
   /// camera 3d transformation
   geometry::Pose3 _transform;
   /// camera lock
   bool _locked = false;
+
+  bool m_RMSECalculated;
+  double m_RMSE;
 };
 
 } // namespace sfmData

@@ -6,6 +6,8 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #pragma once
+#include <vector>
+#include <Eigen/StdVector>
 
 namespace aliceVision {
 
@@ -20,7 +22,15 @@ namespace sfm {
  * @param[in] sfmData The given input SfMData
  * @return RMSE value
  */
-double RMSE(const sfmData::SfMData& sfmData);
+double RMSE(sfmData::SfMData& sfmData);
+
+inline double CalculateRMSE(std::vector<double>& residual)
+{
+    const Eigen::Map<Eigen::RowVectorXd> residuals(&residual[0], residual.size());
+    const double RMSE = std::sqrt(residuals.squaredNorm() / residual.size());
+    return RMSE;
+    
+}
 
 } // namespace sfm
 } // namespace aliceVision
