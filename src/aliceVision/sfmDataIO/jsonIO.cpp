@@ -215,6 +215,7 @@ void saveLandmark(const std::string& name, IndexT landmarkId, const sfmData::Lan
   bpt::ptree landmarkTree;
 
   landmarkTree.put("landmarkId", landmarkId);
+  landmarkTree.put("RMSE", landmark.m_RSME); //RMSE
   landmarkTree.put("descType", feature::EImageDescriberType_enumToString(landmark.descType));
 
   saveMatrix("color", landmark.rgb, landmarkTree);
@@ -231,6 +232,7 @@ void saveLandmark(const std::string& name, IndexT landmarkId, const sfmData::Lan
       const sfmData::Observation& observation = obsPair.second;
 
       obsTree.put("observationId", obsPair.first);
+      obsTree.put("RMSE", obsPair.second.m_RSME); //RMSE value
 
       // features
       if(saveFeatures)
@@ -246,6 +248,42 @@ void saveLandmark(const std::string& name, IndexT landmarkId, const sfmData::Lan
   }
 
   parentTree.push_back(std::make_pair(name, landmarkTree));
+}
+
+void saveLandmark(const std::string& name, IndexT landmarkId, const sfmData::Landmark& landmark, bpt::ptree& parentTree)
+{
+    bpt::ptree landmarkTree;
+
+    landmarkTree.put("landmarkId", landmarkId);
+    landmarkTree.put("RMSE", landmark.m_RSME); // RMSE
+    //landmarkTree.put("descType", feature::EImageDescriberType_enumToString(landmark.descType));
+
+    //saveMatrix("color", landmark.rgb, landmarkTree);
+    //saveMatrix("X", landmark.X, landmarkTree);
+
+    bpt::ptree observationsTree;
+    for(const auto& obsPair : landmark.observations)
+    {
+        bpt::ptree obsTree;
+
+        const sfmData::Observation& observation = obsPair.second;
+
+        obsTree.put("observationId", obsPair.first);
+        obsTree.put("RMSE", obsPair.second.m_RSME); // RMSE value
+
+        //// features
+        // if(saveFeatures)
+        //{
+        //    obsTree.put("featureId", observation.id_feat);
+        //    saveMatrix("x", observation.x, obsTree);
+        //}
+
+        observationsTree.push_back(std::make_pair("", obsTree));
+    }
+
+    landmarkTree.add_child("observations", observationsTree);
+
+    parentTree.push_back(std::make_pair(name, landmarkTree));
 }
 
 void loadLandmark(IndexT& landmarkId, sfmData::Landmark& landmark, bpt::ptree& landmarkTree, bool loadObservations, bool loadFeatures)
@@ -274,6 +312,32 @@ void loadLandmark(IndexT& landmarkId, sfmData::Landmark& landmark, bpt::ptree& l
       landmark.observations.emplace(obsTree.get<IndexT>("observationId"), observation);
     }
   }
+}
+
+
+bool saveStatisticJSON(const sfmData::SfMData& sfmData, const std::string& filename)
+{
+    const Vec3 version = {1, 0, 0};
+
+    //overwhole json tree
+    bpt::ptree fileTree;
+    // file version
+    saveMatrix("version", version, fileTree);
+
+    //
+    bpt::ptree landmarksTree;
+
+    for(const auto& structurePair : sfmData.getLandmarks())
+    {
+        saveLandmark("", structurePair.first, structurePair.second, landmarksTree,true);
+    }
+
+    fileTree.add_child("landmarks", landmarksTree);
+
+    // write the json file with the tree
+
+    bpt::write_json(filename, fileTree);
+    return true;
 }
 
 
@@ -397,7 +461,7 @@ bool saveJSON(const sfmData::SfMData& sfmData, const std::string& filename, ESfM
     bpt::ptree controlPointTree;
 
     for(const auto& controlPointPair : sfmData.getControlPoints())
-      saveLandmark("", controlPointPair.first, controlPointPair.second, controlPointTree);
+      saveLandmark("", controlPointPair.first, controlPointPair.second, controlPointTree,saveObservations,saveFeatures);
 
     fileTree.add_child("controlPoints", controlPointTree);
   }

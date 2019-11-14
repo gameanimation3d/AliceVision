@@ -324,8 +324,19 @@ int main(int argc, char **argv)
   // export to disk computed scene (data & visualizable results)
   ALICEVISION_LOG_INFO("Export SfMData to disk: " + outputSfM);
 
-  sfmDataIO::Save(sfmEngine.getSfMData(), (fs::path(extraInfoFolder) / ("cloud_and_poses" + sfmParams.sfmStepFileExtension)).string(), sfmDataIO::ESfMData::ALL);
+  sfmDataIO::Save(
+      sfmEngine.getSfMData(),
+      (fs::path(extraInfoFolder) / ("cloud_and_poses" + sfmParams.sfmStepFileExtension)).string(),
+      sfmDataIO::ESfMData(sfmDataIO::VIEWS | sfmDataIO::EXTRINSICS | sfmDataIO::INTRINSICS | sfmDataIO::STRUCTURE));
   sfmDataIO::Save(sfmEngine.getSfMData(), outputSfM, sfmDataIO::ESfMData::ALL);
+
+    //export SFM Stastic File
+  sfmDataIO::SaveStatisticFile(
+      sfmEngine.getSfMData(),
+      (fs::path(extraInfoFolder)/ "SFMData_Statistic.sfm").string());
+
+    ALICEVISION_LOG_INFO("Export SfMData Statstic to disk: " +
+                       (fs::path(extraInfoFolder) / "SFMData_Statistic.sfm").string());
 
   if(!outputSfMViewsAndPoses.empty())
    sfmDataIO:: Save(sfmEngine.getSfMData(), outputSfMViewsAndPoses, sfmDataIO::ESfMData(sfmDataIO::VIEWS|sfmDataIO::EXTRINSICS|sfmDataIO::INTRINSICS));

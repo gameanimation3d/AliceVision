@@ -128,6 +128,17 @@ bool Load(sfmData::SfMData& sfmData, const std::string& filename, ESfMData partF
   return status;
 }
 
+bool SaveStatisticFile(const sfmData::SfMData& sfmData, const std::string& filename)
+{
+    const fs::path bPath = fs::path(filename);
+    const std::string extension = bPath.extension().string();
+    const std::string tmpPath = (bPath.parent_path() / bPath.stem()).string() + "." + fs::unique_path().string() + extension;
+
+    saveStatisticJSON(sfmData, tmpPath);
+
+    return true;
+}
+
 bool Save(const sfmData::SfMData& sfmData, const std::string& filename, ESfMData partFlag)
 {
   const fs::path bPath = fs::path(filename);
@@ -167,7 +178,6 @@ bool Save(const sfmData::SfMData& sfmData, const std::string& filename, ESfMData
 
   return status;
 }
-
 } // namespace sfmDataIO
 } // namespace aliceVision
 

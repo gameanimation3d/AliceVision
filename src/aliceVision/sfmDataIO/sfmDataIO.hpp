@@ -38,5 +38,7 @@ bool Load(sfmData::SfMData& sfmData, const std::string& filename, ESfMData partF
 /// save SfMData SfM scene to a file
 bool Save(const sfmData::SfMData& sfmData, const std::string& filename, ESfMData partFlag);
 
+bool SaveStatisticFile(const sfmData::SfMData& sfmData, const std::string& filename);
+
 } // namespace sfmDataIO
 } // namespace aliceVision
