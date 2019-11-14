@@ -77,14 +77,12 @@ bool savePLY(
 					 << (int)iterLandmarks->second.rgb.r() << " "
 					 << (int)iterLandmarks->second.rgb.g() << " "
 					 << (int)iterLandmarks->second.rgb.b() << " ";
-          
-			//iterates over all landmarks prints out the observationID to the line end
-			for(const auto& obsPair : iterLandmarks->second.observations)
-            {
-                stream << obsPair.first << " ";
-			}
-			//end of line 
-			stream << "\n";
+                                
+			//adding Landmark ID 
+            stream << iterLandmarks->first
+                   << "\n";
+              // end of line 
+
         }
       }
       stream.flush();
