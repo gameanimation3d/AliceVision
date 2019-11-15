@@ -155,50 +155,6 @@ namespace sfm
     htmlFileStream << htmlDocStream.getDoc();
     const bool bOk = !htmlFileStream.bad();
 
-    // Export landmarks statistics --------------------------------------------------------------------
-    std::ofstream outputFile;
-    outputFile.open("M:/blub/stat.txt");
-
-    // Foreach landmark
-    for(sfmData::Landmarks::const_iterator iterTracks = sfmData.getLandmarks().begin();
-        iterTracks != sfmData.getLandmarks().end(); ++iterTracks)
-    {
-        outputFile << "|| Landmark-ID:"<< iterTracks->first << " "; // Print out landmark ID
-
-        const sfmData::Observations& observations = iterTracks->second.observations;
-        
-        // iterate over each observations(view) of Landmark
-        for(sfmData::Observations::const_iterator itObs = observations.begin(); itObs != observations.end(); ++itObs)
-        {
-            const sfmData::View* view = sfmData.getViews().at(itObs->first).get();
-            const geometry::Pose3 pose = sfmData.getPose(*view).getTransform();
-            const camera::IntrinsicBase* intrinsic = sfmData.getIntrinsics().at(view->getIntrinsicId()).get();
-            // Use absolute values
-            const Vec2 residual = intrinsic->residual(pose, iterTracks->second.X, itObs->second.x).array().abs();
-
-            std::vector<double> residuals;
-            residuals.push_back(residual(0));
-            residuals.push_back(residual(1));
-
-            MinMaxMeanMedian<double> stats(residuals.begin(), residuals.end());
-
-            //RMSE
-            const Eigen::Map<Eigen::RowVectorXd> residuals_mapping(&residuals[0], residuals.size());
-            const double RMSE = std::sqrt(residuals_mapping.squaredNorm() / (double)residuals.size());
-
-            // write to file || Observation ID und dann der residular wert
-            outputFile << itObs->first << "|"
-                       << ",Residuals:," << stats.min << " " << stats.median << " " << stats.mean << " " << stats.max
-                       << " "
-                       << "RMSE-Value:" << RMSE << " "; 
-
-
-        }
-
-        outputFile << "\n"; // end of line
-    }
-    outputFile.close();
-
     return bOk;
 }
 
