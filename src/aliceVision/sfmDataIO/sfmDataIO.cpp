@@ -131,10 +131,10 @@ bool Load(sfmData::SfMData& sfmData, const std::string& filename, ESfMData partF
 bool SaveStatisticFile(const sfmData::SfMData& sfmData, const std::string& filename)
 {
     const fs::path bPath = fs::path(filename);
-    const std::string extension = bPath.extension().string();
-    const std::string tmpPath = (bPath.parent_path() / bPath.stem()).string() + "." + fs::unique_path().string() + extension;
+    //const std::string extension = bPath.extension().string();
+    //const std::string tmpPath = (bPath.parent_path() / bPath.stem()).string() + "." + fs::unique_path().string() + extension;
 
-    saveStatisticJSON(sfmData, tmpPath);
+    saveStatisticJSON(sfmData, bPath.string());
 
     return true;
 }
