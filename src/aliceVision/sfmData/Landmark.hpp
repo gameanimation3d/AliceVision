@@ -62,6 +62,11 @@ public:
         m_RSME = *rsme;
         m_RSMECalculated = true;
     }
+
+	void SetObservations(Vec2& observation) 
+	{
+		m_ObservationResidual = &observation;
+	}
 };
 
 /// Observations are indexed by their View_id
