@@ -28,7 +28,7 @@ double RMSE(sfmData::SfMData& sfmData)
     Vec2 residual; //temporary storing of them
 
 	//Foreach Landmark
-#pragma omp parallel for collapse(2) // OpenMP
+#pragma omp parallel for // OpenMP
     for(int i = 0; i < landmarks.size(); i++)
     {
         sfmData::Observations& obs = landmarks[i].observations;
