@@ -23,18 +23,19 @@ double RMSE(sfmData::SfMData& sfmData)
     // get landmarks
     sfmData::Landmarks& landmarks = sfmData.getLandmarks();
 
+
 	//Foreach Landmark
-//#pragma omp parallel for // OpenMP
-    for(int i = 0; i < sfmData.getLandmarks().size(); i++)
+#pragma omp parallel for collapse(2) // OpenMP
+    for(int i = 0; i < landmarks.size(); i++)
     {
         sfmData::Observations& obs = landmarks[i].observations;
 
         // foreach Observation
-        for(int o = 0; o < landmarks[i].observations.size(); o++)
+        for(int o = 0; o < obs.size(); o++)
         {
             const sfmData::View* view = &sfmData.getView(obs[i].id_feat);
 			const geometry::Pose3 pose = sfmData.getPose(*view).getTransform();
-            const std::shared_ptr<camera::IntrinsicBase> intrinsic = sfmData.getIntrinsics().at(*view->getIntrinsicId);
+            const std::shared_ptr<camera::IntrinsicBase> intrinsic = sfmData.getIntrinsics().at(view->getIntrinsicId());
             Vec2 residual = intrinsic->residual(pose, landmarks[i].X, obs[i].x);
 
             vec.push_back(residual(0));
@@ -87,7 +88,7 @@ double RMSE(sfmData::SfMData& sfmData)
 	
 	sfmData::Views& views = sfmData.getViews();
 
-	//#pragma omp parallel for // OpenMP
+	#pragma omp parallel for // OpenMP
     for(int i = 0; i < views.size(); i++)     // iterate over view || generate for every pose and RMSE value
     {
         const sfmData::View& v = *views.at(i);
