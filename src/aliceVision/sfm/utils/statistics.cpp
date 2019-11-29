@@ -7,6 +7,9 @@
 
 #include "statistics.hpp"
 #include <aliceVision/sfmData/SfMData.hpp>
+#include <aliceVision/system/Timer.hpp>
+
+#include <iostream>
 
 namespace aliceVision
 {
@@ -15,6 +18,8 @@ namespace sfm
 
 double RMSE(sfmData::SfMData& sfmData)
 {
+    const aliceVision::system::Timer timer;
+
     // Compute residuals for each observation
     std::vector<double> residualsAllLandmarks; // for all landmarks all residuals
 
@@ -32,11 +37,20 @@ double RMSE(sfmData::SfMData& sfmData)
     for(int i = 0; i < landmarks.size(); i++)
     {
         sfmData::Observations& obs = landmarks[i].observations;
+        if(obs.empty())
+        {
+            continue;
+        }
 
         // foreach Observation
         for(int o = 0; o < obs.size(); o++)
         {
-            const sfmData::View* view = &sfmData.getView(obs[i].id_feat);
+            IndexT index = obs.at(i).id_feat;
+            if(index == NULL)
+            {
+                continue;
+            }
+            const sfmData::View* view = &sfmData.getView(index);
 			const geometry::Pose3 pose = sfmData.getPose(*view).getTransform();
             const std::shared_ptr<camera::IntrinsicBase> intrinsic = sfmData.getIntrinsics().at(view->getIntrinsicId());
             residual = intrinsic->residual(pose, landmarks[i].X, obs[i].x);
@@ -59,8 +73,16 @@ double RMSE(sfmData::SfMData& sfmData)
             residualVecObs.clear();
         } // End loop over observation
 
-        //calculate landmark RMSE
-		landmarks[i].m_RSME = CalculateRMSE(vecLandMark);
+        if(!vecLandMark.empty())
+        {
+            // calculate landmark RMSE
+            landmarks[i].m_RSME = CalculateRMSE(vecLandMark);
+        }
+        else
+        {
+
+        }
+
 
         vecLandMark.clear(); // remove residuals for next landmark
     }                        // end loop for landmarks
@@ -114,6 +136,9 @@ double RMSE(sfmData::SfMData& sfmData)
 
     const Eigen::Map<Eigen::RowVectorXd> residuals(&residualsAllLandmarks[0], residualsAllLandmarks.size());
     const double RMSE = std::sqrt(residuals.squaredNorm() / residualsAllLandmarks.size());
+
+    std::cout << "RMSE Calculation Took: " << timer.elapsed();
+
     return RMSE;
 }
 
