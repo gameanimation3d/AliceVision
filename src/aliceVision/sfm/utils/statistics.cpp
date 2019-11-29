@@ -36,24 +36,20 @@ double RMSE(sfmData::SfMData& sfmData)
 #pragma omp parallel for // OpenMP
     for(int i = 0; i < landmarks.size(); i++)
     {
-        sfmData::Observations& obs = landmarks[i].observations;
+        sfmData::Observations& obs = landmarks.at(i).observations;
         if(obs.empty())
         {
             continue;
         }
 
         // foreach Observation
-        for(int o = 0; o < obs.size(); o++)
+        for(sfmData::Observations::iterator itObs = obs.begin(); itObs != obs.end(); ++itObs)
         {
-            IndexT index = obs.at(i).id_feat;
-            if(index == NULL)
-            {
-                continue;
-            }
-            const sfmData::View* view = &sfmData.getView(index);
-			const geometry::Pose3 pose = sfmData.getPose(*view).getTransform();
+
+            const sfmData::View* view = sfmData.getViews().find(itObs->first)->second.get();
+            const geometry::Pose3 pose = sfmData.getPose(*view).getTransform();
             const std::shared_ptr<camera::IntrinsicBase> intrinsic = sfmData.getIntrinsics().at(view->getIntrinsicId());
-            residual = intrinsic->residual(pose, landmarks[i].X, obs[i].x);
+            residual = intrinsic->residual(pose, landmarks[i].X, itObs->second.x);
 
             residualsAllLandmarks.push_back(residual(0));
             residualsAllLandmarks.push_back(residual(1));
@@ -66,9 +62,8 @@ double RMSE(sfmData::SfMData& sfmData)
             vecLandMark.push_back(residual(0));
             vecLandMark.push_back(residual(1));
 
-			obs[i].SetObservations(residual);
-            //*itObs->second.m_ObservationResidual = residual;
-            obs[i].m_RSME = CalculateRMSE(residualVecObs);
+			*itObs->second.m_ObservationResidual = residual;
+            itObs->second.m_RSME = CalculateRMSE(residualVecObs);
 
             residualVecObs.clear();
         } // End loop over observation
