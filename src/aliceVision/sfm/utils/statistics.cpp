@@ -7,6 +7,8 @@
 
 #include "statistics.hpp"
 #include <aliceVision/sfmData/SfMData.hpp>
+#include "aliceVision/system/Timer.hpp"
+#include <iostream>
 
 namespace aliceVision
 {
@@ -15,6 +17,9 @@ namespace sfm
 
 double RMSE(sfmData::SfMData& sfmData)
 {
+    aliceVision::system::Timer timer;
+    
+    
     // Compute residuals for each observation
     std::vector<double> vec; // for all landmarks all residuals
 
@@ -98,6 +103,10 @@ double RMSE(sfmData::SfMData& sfmData)
 
     const Eigen::Map<Eigen::RowVectorXd> residuals(&vec[0], vec.size());
     const double RMSE = std::sqrt(residuals.squaredNorm() / vec.size());
+
+    std::cout << "Statistic Calculation Took: "<< timer.elapsed();
+    ALICEVISION_LOG_INFO("Statistic Calculation Took: " + std::to_string(timer.elapsed()));
+
     return RMSE;
 }
 
