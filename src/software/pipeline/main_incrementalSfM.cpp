@@ -75,10 +75,10 @@ int main(int argc, char **argv)
   std::vector<std::string> matchesFolders;
   std::string outputSfM;
 
-  sfmDataFilename = "M:/Repo/GitRepos/SFMVisualizer_dev/external/SFM/aliceVision/data/cameraData.sfm";
+  sfmDataFilename = "M:/Repo/GitRepos/SFMVisualizer_dev-aliceVisionIntegrate/external/SFM/aliceVision/temp/camInit/cameraInit.sfm";
   outputSfM = "M:/blub/blu2b.ply";
-  featuresFolders.push_back("M:/Repo/GitRepos/SFMVisualizer_dev/external/SFM/aliceVision/temp/featureExtraction");
-  matchesFolders.push_back("M:/Repo/GitRepos/SFMVisualizer_dev/external/SFM/aliceVision/temp/imageMatch");
+  featuresFolders.push_back("M:/Repo/GitRepos/SFMVisualizer_dev-aliceVisionIntegrate/external/SFM/aliceVision/temp/featureExtraction");
+  matchesFolders.push_back("M:/Repo/GitRepos/SFMVisualizer_dev-aliceVisionIntegrate/external/SFM/aliceVision/temp/imageMatch");
 
  
 
