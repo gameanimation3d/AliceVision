@@ -74,12 +74,12 @@ int main(int argc, char **argv)
   std::vector<std::string> featuresFolders;
   std::vector<std::string> matchesFolders;
   std::string outputSfM;
+  bool additionalAlembicExport;
 
   //sfmDataFilename = "M:/Repo/GitRepos/SFMVisualizer_dev/external/SFM/aliceVision/data/cameraData.sfm";
   //outputSfM = "M:/blub/blu2b.ply";
   //featuresFolders.push_back("M:/Repo/GitRepos/SFMVisualizer_dev/external/SFM/aliceVision/temp/featureExtraction");
   //matchesFolders.push_back("M:/Repo/GitRepos/SFMVisualizer_dev/external/SFM/aliceVision/temp/imageMatch");
-
  
 
   // user optional parameters
@@ -164,6 +164,8 @@ int main(int argc, char **argv)
       "Enable/Disable the track filtering.\n")
     ("useRigConstraint", po::value<bool>(&sfmParams.useRigConstraint)->default_value(sfmParams.useRigConstraint),
       "Enable/Disable rig constraint.\n")
+    ("additionalAlembicExport", po::value<bool>(&additionalAlembicExport)->default_value(false),
+      "Export an additional Alembic File.\n")
     ("lockScenePreviouslyReconstructed", po::value<bool>(&lockScenePreviouslyReconstructed)->default_value(lockScenePreviouslyReconstructed),
       "Lock/Unlock scene previously reconstructed.\n");
 
@@ -330,19 +332,25 @@ int main(int argc, char **argv)
       sfmDataIO::ESfMData(sfmDataIO::VIEWS | sfmDataIO::EXTRINSICS | sfmDataIO::INTRINSICS | sfmDataIO::STRUCTURE));
   sfmDataIO::Save(sfmEngine.getSfMData(), outputSfM, sfmDataIO::ESfMData::ALL);
 
-    //double export alembic
-  sfmDataIO::Save(
-      sfmEngine.getSfMData(),
-      (fs::path(extraInfoFolder) / ("cloud_and_poses.abc")).string(),
-      sfmDataIO::ESfMData(sfmDataIO::VIEWS | sfmDataIO::EXTRINSICS | sfmDataIO::INTRINSICS | sfmDataIO::STRUCTURE));
+    if(additionalAlembicExport)
+    {
+        ALICEVISION_LOG_INFO("Export Additional Alembic SfMData to disk: ");
+
+        // double export alembic
+        sfmDataIO::Save(sfmEngine.getSfMData(), (fs::path(extraInfoFolder) / ("cloud_and_poses.abc")).string(),
+                        sfmDataIO::ESfMData(sfmDataIO::VIEWS | sfmDataIO::EXTRINSICS | sfmDataIO::INTRINSICS |
+                                            sfmDataIO::STRUCTURE));
+    }
+    
+    ALICEVISION_LOG_INFO("Export SfMData Statstic to disk: " +
+                         (fs::path(extraInfoFolder) / "SFMData_Statistic.sfm").string());
 
     //export SFM Stastic File
   sfmDataIO::SaveStatisticFile(
       sfmEngine.getSfMData(),
       (fs::path(extraInfoFolder)/ "SFMData_Statistic.sfm").string());
 
-    ALICEVISION_LOG_INFO("Export SfMData Statstic to disk: " +
-                       (fs::path(extraInfoFolder) / "SFMData_Statistic.sfm").string());
+
 
   if(!outputSfMViewsAndPoses.empty())
    sfmDataIO:: Save(sfmEngine.getSfMData(), outputSfMViewsAndPoses, sfmDataIO::ESfMData(sfmDataIO::VIEWS|sfmDataIO::EXTRINSICS|sfmDataIO::INTRINSICS));
