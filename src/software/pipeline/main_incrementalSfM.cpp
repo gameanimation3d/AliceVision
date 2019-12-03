@@ -330,6 +330,12 @@ int main(int argc, char **argv)
       sfmDataIO::ESfMData(sfmDataIO::VIEWS | sfmDataIO::EXTRINSICS | sfmDataIO::INTRINSICS | sfmDataIO::STRUCTURE));
   sfmDataIO::Save(sfmEngine.getSfMData(), outputSfM, sfmDataIO::ESfMData::ALL);
 
+    //double export alembic
+  sfmDataIO::Save(
+      sfmEngine.getSfMData(),
+      (fs::path(extraInfoFolder) / ("cloud_and_poses.abc")).string(),
+      sfmDataIO::ESfMData(sfmDataIO::VIEWS | sfmDataIO::EXTRINSICS | sfmDataIO::INTRINSICS | sfmDataIO::STRUCTURE));
+
     //export SFM Stastic File
   sfmDataIO::SaveStatisticFile(
       sfmEngine.getSfMData(),
