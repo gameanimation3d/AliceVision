@@ -335,11 +335,15 @@ int main(int argc, char **argv)
     if(additionalAlembicExport)
     {
         ALICEVISION_LOG_INFO("Export Additional Alembic SfMData to disk: ");
+        aliceVision::system::Timer alembicTimer;
 
         // double export alembic
         sfmDataIO::Save(sfmEngine.getSfMData(), (fs::path(extraInfoFolder) / ("cloud_and_poses.abc")).string(),
                         sfmDataIO::ESfMData(sfmDataIO::VIEWS | sfmDataIO::EXTRINSICS | sfmDataIO::INTRINSICS |
                                             sfmDataIO::STRUCTURE));
+
+        ALICEVISION_LOG_INFO("Export Alembic took " + std::to_string(alembicTimer.elapsed()) + "s");
+
     }
     
     ALICEVISION_LOG_INFO("Export SfMData Statstic to disk: " +
