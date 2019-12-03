@@ -80,7 +80,7 @@ int main(int argc, char **argv)
   //outputSfM = "M:/blub/blu2b.ply";
   //featuresFolders.push_back("M:/Repo/GitRepos/SFMVisualizer_dev/external/SFM/aliceVision/temp/featureExtraction");
   //matchesFolders.push_back("M:/Repo/GitRepos/SFMVisualizer_dev/external/SFM/aliceVision/temp/imageMatch");
- 
+  //additionalAlembicExport = true;
 
   // user optional parameters
 
@@ -349,11 +349,12 @@ int main(int argc, char **argv)
     ALICEVISION_LOG_INFO("Export SfMData Statstic to disk: " +
                          (fs::path(extraInfoFolder) / "SFMData_Statistic.sfm").string());
 
+    aliceVision::system::Timer statisticTimer;
     //export SFM Stastic File
   sfmDataIO::SaveStatisticFile(
       sfmEngine.getSfMData(),
       (fs::path(extraInfoFolder)/ "SFMData_Statistic.sfm").string());
-
+    ALICEVISION_LOG_INFO("Export SFM Statistic took " + std::to_string(statisticTimer.elapsed()) + "s");
 
 
   if(!outputSfMViewsAndPoses.empty())
