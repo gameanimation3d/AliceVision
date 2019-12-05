@@ -13,6 +13,7 @@
 #include <aliceVision/mvsData/StaticVector.hpp>
 #include <aliceVision/mvsData/Voxel.hpp>
 #include <aliceVision/mvsUtils/common.hpp>
+#include "aliceVision/sfmData/SfMData.hpp"
 
 namespace aliceVision {
 namespace mesh {
@@ -115,6 +116,7 @@ public:
 
     void saveToObj(const std::string& filename);
 
+    void saveLandmarkMatchingFile(sfmData::Landmarks& landmarks, std::string exportFileName);
     bool loadFromBin(std::string binFileName);
     void saveToBin(std::string binFileName);
     bool loadFromObjAscii(int& nmtls, StaticVector<int>& trisMtlIds, StaticVector<Point3d>& normals,

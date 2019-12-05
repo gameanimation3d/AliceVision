@@ -108,6 +108,7 @@ void createDenseSfMData(const sfmData::SfMData& sfmData,
         const camera::IntrinsicBase* intrinsicPtr = sfmData.getIntrinsicPtr(view.getIntrinsicId());
         const sfmData::Observation observation(intrinsicPtr->project(sfmData.getPose(view).getTransform(), pt3D, true), UndefinedIndexT); // apply distortion
         landmark.observations[view.getViewId()] = observation;
+        landmark.m_RawIndex = i; //setting old index
       }
     }
     outSfmData.getLandmarks()[i] = landmark;
@@ -149,8 +150,13 @@ int main(int argc, char* argv[])
     bool addLandmarksToTheDensePointCloud = false;
     bool saveRawDensePointCloud = false;
     bool colorizeOutput = false;
+    std::string LandmarkMatchingFilePath;
 
     fuseCut::FuseParams fuseParams;
+
+    //sfmDataFilename =
+    //    "M:/Repo/GitRepos/SFMVisualizer_dev_Triangulation/external/SFM/aliceVision/data/cloud_and_poses.abc";
+    //outputMesh = "M:/Repo/GitRepos/SFMVisualizer_dev_Triangulation/external/SFM/aliceVision/data/sparseMesh.obj";
 
     po::options_description allParams("AliceVision meshing");
 
@@ -191,7 +197,9 @@ int main(int argc, char* argv[])
         ("addLandmarksToTheDensePointCloud", po::value<bool>(&addLandmarksToTheDensePointCloud)->default_value(addLandmarksToTheDensePointCloud),
             "Add SfM Landmarks into the dense point cloud (created from depth maps). If only the SfM is provided in input, SfM landmarks will be used regardless of this option.")
         ("colorizeOutput", po::value<bool>(&colorizeOutput)->default_value(colorizeOutput),
-            "Whether to colorize output dense point cloud and mesh.");
+        "Whether to colorize output dense point cloud and mesh.")
+        ("landmarkMatchesFile", po::value<std::string>(&LandmarkMatchingFilePath),
+        "Export Landmark Matching File finding the Landmark in the OBJ by index.");
 
     po::options_description advancedParams("Advanced parameters");
     advancedParams.add_options()
@@ -533,6 +541,8 @@ int main(int argc, char* argv[])
 
     ALICEVISION_LOG_INFO("Save obj mesh file.");
     mesh->saveToObj(outputMesh);
+
+    mesh->saveLandmarkMatchingFile(densePointCloud.getLandmarks(), LandmarkMatchingFilePath);
     delete mesh;
 
 
