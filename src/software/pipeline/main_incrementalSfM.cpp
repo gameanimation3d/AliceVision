@@ -339,8 +339,7 @@ int main(int argc, char **argv)
 
         // double export alembic
         sfmDataIO::Save(sfmEngine.getSfMData(), (fs::path(extraInfoFolder) / ("cloud_and_poses.abc")).string(),
-                        sfmDataIO::ESfMData(sfmDataIO::VIEWS | sfmDataIO::EXTRINSICS | sfmDataIO::INTRINSICS |
-                                            sfmDataIO::STRUCTURE));
+                        sfmDataIO::ESfMData::ALL);
 
         ALICEVISION_LOG_INFO("Export Alembic took " + std::to_string(alembicTimer.elapsed()) + "s");
 
