@@ -158,8 +158,8 @@ int main(int argc, char* argv[])
     requiredParams.add_options()
         ("input,i", po::value<std::string>(&sfmDataFilename)->required(),
           "SfMData file.")
-        ("output,o", po::value<std::string>(&outputDensePointCloud)->required(),
-          "Output Dense SfMData file.")
+        //("output,o", po::value<std::string>(&outputDensePointCloud)->required(),
+        //  "Output Dense SfMData file.")
         ("outputMesh,o", po::value<std::string>(&outputMesh)->required(),
           "Output mesh (OBJ file format).");
 
