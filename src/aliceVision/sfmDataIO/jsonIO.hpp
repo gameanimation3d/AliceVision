@@ -208,6 +208,8 @@ void saveLandmark(const std::string& name, IndexT landmarkId, const sfmData::Lan
  */
 void loadLandmark(IndexT& landmarkId, sfmData::Landmark& landmark, bpt::ptree& landmarkTree, bool loadObservations = true, bool loadFeatures = true);
 
+bool saveLandmarkVertexMatchJSON(const std::vector<Point3d>& data,
+                                 std::string exportFileName);
 
 bool saveStatisticJSON(const sfmData::SfMData& sfmData, const std::string& filename);
 

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <aliceVision/sfmData/SfMData.hpp>
+#include "aliceVision/mvsData/Point3d.hpp"
 
 namespace aliceVision {
 namespace sfmDataIO {
@@ -37,6 +38,8 @@ bool Load(sfmData::SfMData& sfmData, const std::string& filename, ESfMData partF
 
 /// save SfMData SfM scene to a file
 bool Save(const sfmData::SfMData& sfmData, const std::string& filename, ESfMData partFlag);
+
+bool SaveLandmarkVertexMatches(const std::vector<Point3d>& data, std::string exportFileName);
 
 bool SaveStatisticFile(const sfmData::SfMData& sfmData, const std::string& filename);
 

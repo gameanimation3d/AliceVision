@@ -19,6 +19,8 @@
 #endif
 
 #include <boost/filesystem.hpp>
+#include "aliceVision/mvsData/Point3d.hpp"
+//#include "aliceVision/mvsData/StaticVector.hpp"
 
 namespace fs = boost::filesystem;
 
@@ -126,6 +128,13 @@ bool Load(sfmData::SfMData& sfmData, const std::string& filename, ESfMData partF
     return ValidIds(sfmData, partFlag);
 
   return status;
+}
+
+bool SaveLandmarkVertexMatches(const std::vector<Point3d>& data,
+                               std::string exportFileName)
+{
+    const fs::path bPath = fs::path(exportFileName);
+    return saveLandmarkVertexMatchJSON(data, exportFileName);
 }
 
 bool SaveStatisticFile(const sfmData::SfMData& sfmData, const std::string& filename)

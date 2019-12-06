@@ -9,7 +9,7 @@
 #include <aliceVision/sfmDataIO/viewIO.hpp>
 
 #include <boost/property_tree/json_parser.hpp>
-
+#include "aliceVision/mvsData/Point3d.hpp"
 #include <memory>
 #include <cassert>
 
@@ -313,6 +313,38 @@ void loadLandmark(IndexT& landmarkId, sfmData::Landmark& landmark, bpt::ptree& l
     }
   }
 }
+
+bool saveLandmarkVertexMatchJSON(const std::vector<Point3d>& data,
+                                 std::string exportFileName)
+{
+   
+    const Vec3 version = {1, 0, 0};
+
+    // overwhole json tree
+    bpt::ptree fileTree;
+    // file version
+    saveMatrix("version", version, fileTree);
+
+    //
+    bpt::ptree matchesTree;
+    bpt::ptree matchTree;
+
+
+    for(int i = 0; i < data.size(); ++i)
+    {
+        matchTree.put("objIndex", i);
+        matchTree.put("landmarkID", data[i].id);
+        matchesTree.push_back(std::make_pair("", matchTree));
+    }
+    
+    fileTree.add_child("matchesindex", matchesTree);
+
+    // write the json file with the tree
+
+    bpt::write_json(exportFileName, fileTree);
+    return true;
+}
+
 
 
 bool saveStatisticJSON(const sfmData::SfMData& sfmData, const std::string& filename)

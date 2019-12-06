@@ -541,11 +541,12 @@ int main(int argc, char* argv[])
 
     if(!LandmarkMatchingFilePath.empty())
     {
-        ALICEVISION_LOG_INFO("Start Save CSV Landmark matches.");
+        ALICEVISION_LOG_INFO("Start Save JSON Landmark matches.");
         aliceVision::system::Timer timerLandmarkMatches;
-        mesh->saveLandmarkMatchingFile(sfmData.getLandmarks(),densePointCloud.getLandmarks(), LandmarkMatchingFilePath);
+        //mesh->saveLandmarkMatchingFile(sfmData.getLandmarks(),densePointCloud.getLandmarks(), LandmarkMatchingFilePath);
+        sfmDataIO::SaveLandmarkVertexMatches(mesh->pts->getData(),LandmarkMatchingFilePath);
 
-        ALICEVISION_LOG_INFO("Export CSV Landmark took " + std::to_string(timerLandmarkMatches.elapsed()) + "s");
+        ALICEVISION_LOG_INFO("Export JSON Landmark Matches took " + std::to_string(timerLandmarkMatches.elapsed()) + "s");
 
     }
 
