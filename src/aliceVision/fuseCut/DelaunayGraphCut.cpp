@@ -649,8 +649,7 @@ void DelaunayGraphCut::addPointsFromSfM(const Point3d hexah[8], const StaticVect
   for(std::size_t i = 0; i < nbPoints; ++i)
   {
     const sfmData::Landmark& landmark = landmarkIt->second;
-    const Point3d p(landmark.X(0), landmark.X(1), landmark.X(2));
-
+      const Point3d p(landmark.X(0), landmark.X(1), landmark.X(2), static_cast<int>(i));
     if(mvsUtils::isPointInHexahedron(p, hexah))
     {
       *vCoordsIt = p;
