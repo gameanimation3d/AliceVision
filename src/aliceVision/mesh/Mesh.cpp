@@ -71,24 +71,25 @@ void Mesh::saveToObj(const std::string& filename)
     ALICEVISION_LOG_INFO("Save mesh to obj done.");
 }
 
-void Mesh::saveLandmarkMatchingFile(sfmData::Landmarks& landmarks, std::string exportFileName)
+void Mesh::saveLandmarkMatchingFile(sfmData::Landmarks& oldlandmarks, sfmData::Landmarks& newlandmarks,
+                                    std::string exportFileName)
 {
-    boost::filesystem::ofstream outputFile;
     boost::filesystem::ofstream fs;
 
     fs.open(exportFileName);
 
-    outputFile << "Landmark ID "
-               << "Obj Index" << std::endl;
+    fs << "Obj Index "
+               << "Landmark ID" << std::endl;
 
-    //Iterate over landmark get old position ID with new vertex ID
+    const std::vector<Point3d>& data = pts->getData();
+
+    // Iterate vertex ID
+//#pragma omp for
     for(int i = 0; i < pts->size(); ++i)
     {
-        const auto& c = landmarks.at(i);
-        outputFile << c.m_RawIndex << " " << i << std::endl;
+        fs << i << " " << data[i].id << std::endl;
     }
-
-
+    fs.close();
 }
 
 bool Mesh::loadFromBin(std::string binFileName)

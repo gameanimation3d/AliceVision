@@ -116,7 +116,8 @@ public:
 
     void saveToObj(const std::string& filename);
 
-    void saveLandmarkMatchingFile(sfmData::Landmarks& landmarks, std::string exportFileName);
+    void saveLandmarkMatchingFile(sfmData::Landmarks& oldlandmarks, sfmData::Landmarks& newlandmarks,
+                                  std::string exportFileName);
     bool loadFromBin(std::string binFileName);
     void saveToBin(std::string binFileName);
     bool loadFromObjAscii(int& nmtls, StaticVector<int>& trisMtlIds, StaticVector<Point3d>& normals,

@@ -539,10 +539,20 @@ int main(int argc, char* argv[])
     ALICEVISION_LOG_INFO("Save dense point cloud.");
     sfmDataIO::Save(densePointCloud, outputDensePointCloud, sfmDataIO::ESfMData::ALL_DENSE);
 
+    if(!LandmarkMatchingFilePath.empty())
+    {
+        ALICEVISION_LOG_INFO("Start Save CSV Landmark matches.");
+        aliceVision::system::Timer timerLandmarkMatches;
+        mesh->saveLandmarkMatchingFile(sfmData.getLandmarks(),densePointCloud.getLandmarks(), LandmarkMatchingFilePath);
+
+        ALICEVISION_LOG_INFO("Export CSV Landmark took " + std::to_string(timerLandmarkMatches.elapsed()) + "s");
+
+    }
+
     ALICEVISION_LOG_INFO("Save obj mesh file.");
     mesh->saveToObj(outputMesh);
 
-    mesh->saveLandmarkMatchingFile(densePointCloud.getLandmarks(), LandmarkMatchingFilePath);
+
     delete mesh;
 
 
