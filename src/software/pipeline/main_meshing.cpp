@@ -92,61 +92,93 @@ inline double round_nplaces(const double& value, int to)
     double places = pow(10.0, to);
     return round(value * places) / places;
 }
-inline bool CheckIfPoseTheSame(const Point3d& point3D, const Vec3& landmark)
+
+inline double& GetDistanceBetweenPoints(const Point3d& point3D, const Vec3& landmark)
 {
-    double not_1 = point3D.x;
-    double not_2 = landmark[0];
-    
-    double round_1 = round_nplaces(point3D.x, 6);
-    double round_2 = round_nplaces(landmark[0], 6);
-    double difference = round_1 - round_2;
-
-    if(round_nplaces(point3D.x, 6) - round_nplaces(landmark[0], 6) >= 0.00001f)
-    {
-        return false;
-    }
-
-     not_1 = point3D.y;
-     not_2 = landmark[1];
-
-     round_1 = round_nplaces(point3D.y, 6);
-     round_2 = round_nplaces(landmark[1], 6);
-     difference = round_1 - round_2;
-
-
-    if(round_nplaces(point3D.y, 6) - round_nplaces(landmark[1], 6) >= 0.00001f)
-    {
-        return false;
-    }
-
-    not_1 = point3D.z;
-    not_2 = landmark[2];
-
-    round_1 = round_nplaces(point3D.z, 6);
-    round_2 = round_nplaces(landmark[2], 6);
-    difference = round_1 - round_2;
-
-    if(round_nplaces(point3D.z, 6) - round_nplaces(landmark[2], 6) >= 0.00001f)
-    {
-        return false;
-    }
-    return true;
+    double distance = sqrt(pow(point3D.x - landmark[0], 2) + pow(point3D.y - landmark[1], 2) + pow(point3D.z - landmark[2], 2)*1.0);
+    return distance;
 }
 
+//inline bool CheckIfPoseTheSame(const Point3d& point3D, const Vec3& landmark)
+//{
+//    double not_1 = point3D.x;
+//    double not_2 = landmark[0];
+//
+//    double round_1 = round_nplaces(point3D.x, 6);
+//    double round_2 = round_nplaces(landmark[0], 6);
+//    double difference = round_1 - round_2;
+//
+//    if(round_nplaces(point3D.x, 6) - round_nplaces(landmark[0], 6) >= 0.00001f)
+//    {
+//        return false;
+//    }
+//
+//    not_1 = point3D.y;
+//    not_2 = landmark[1];
+//
+//    round_1 = round_nplaces(point3D.y, 6);
+//    round_2 = round_nplaces(landmark[1], 6);
+//    difference = round_1 - round_2;
+//
+//    if(round_nplaces(point3D.y, 6) - round_nplaces(landmark[1], 6) >= 0.00001f)
+//    {
+//        return false;
+//    }
+//
+//    not_1 = point3D.z;
+//    not_2 = landmark[2];
+//
+//    round_1 = round_nplaces(point3D.z, 6);
+//    round_2 = round_nplaces(landmark[2], 6);
+//    difference = round_1 - round_2;
+//
+//    if(round_nplaces(point3D.z, 6) - round_nplaces(landmark[2], 6) >= 0.00001f)
+//    {
+//        return false;
+//    }
+//    return true;
+//}
+
 bool FindLandmarkForVertexinHashMap(HashMap<std::string, std::vector<sfmData::Landmark>>& landmarkPerX, Point3d& point,
-                                    std::string inputKey)
+                                    std::string inputKey,const float DistanceThreshold)
 {
+
     if(landmarkPerX.find(inputKey) != landmarkPerX.end())
     {
         std::vector<sfmData::Landmark>& pointInSameXspace = landmarkPerX.at(inputKey);
+
+        double smallestDistance = 1;
+        int smallestDistanceIndex = 0;
+        double distance = 0;
         for(int j = 0; j < pointInSameXspace.size(); ++j)
         {
-            if(CheckIfPoseTheSame(point, pointInSameXspace[j].X))
+            double distance = GetDistanceBetweenPoints(point, pointInSameXspace[j].X);
+
+            if(distance < smallestDistance)
+            {
+                smallestDistance = distance;
+                smallestDistanceIndex = j;
+            }
+
+            
+            /*if(CheckIfPoseTheSame(point, pointInSameXspace[j].X))
             {
                 point.id = pointInSameXspace[j].m_RawIndex;
                 return true;
-            }
+            }*/
         }
+
+        if(smallestDistance < DistanceThreshold)
+        {
+            point.id = pointInSameXspace[smallestDistanceIndex].m_RawIndex;
+            return true;
+        }
+        else
+        {
+            ALICEVISION_LOG_DEBUG("Smallest Distance is " + std::to_string(smallestDistance));
+            return false;
+        }
+
         // counter++;
     }
 
@@ -158,8 +190,10 @@ int CheckIfMatchesAreWorking(sfmData::Landmarks& landmarks, std::vector<Point3d>
     int counter = 0;
     HashMap<std::string, std::vector<sfmData::Landmark>> landmarkPerX;
     bool hasBeenFound = false;
-    int numberOfDigitsForHashMapKey = 3;
-    float valueToChangeIfNotFound = 0.001f;
+    const int numberOfDigitsForHashMapKey = 3;
+    const float valueToChangeIfNotFound = 0.001f;
+
+    ALICEVISION_LOG_INFO("Start Setup of Hashmap for Landmarks by X");
 
     float convertedDouble = 0;
     //#pragma omp parallel for
@@ -174,10 +208,15 @@ int CheckIfMatchesAreWorking(sfmData::Landmarks& landmarks, std::vector<Point3d>
     }
     std::string hashKey = "";
 
+    ALICEVISION_LOG_DEBUG("Finish Setup of Hashmap for Landmarks by X");
+
     //#pragma omp parallel for
     // iterate over vertices
     Point3d point = data[0];
-    for(int i = 0; i < data.size(); ++i)
+    const float DistanceThreshold = 0.0001f;
+
+    ALICEVISION_LOG_DEBUG("Start Loop through Vertices");
+    for(int i = 0; i < data.size()-1; ++i)
     {
         hasBeenFound = false;
         point = data[i];
@@ -187,18 +226,20 @@ int CheckIfMatchesAreWorking(sfmData::Landmarks& landmarks, std::vector<Point3d>
             hasBeenFound = false;
         }
 
-        if(!CheckIfPoseTheSame(data[i], landmarks[data[i].id].X))
+        if(GetDistanceBetweenPoints(data[i], landmarks[data[i].id].X) >= DistanceThreshold)
         {
+            ALICEVISION_LOG_DEBUG("Vertex:" + std::to_string(i) + " find correct match");
+            
             hashKey = std::to_string(round_nplaces(data[i].x, numberOfDigitsForHashMapKey));
 
-            hasBeenFound = FindLandmarkForVertexinHashMap(landmarkPerX, data[i], hashKey);
+            hasBeenFound = FindLandmarkForVertexinHashMap(landmarkPerX, data[i], hashKey, DistanceThreshold);
 
             // Upper positive element of hasmap
             if(!hasBeenFound)
             {
                 hashKey =
                     std::to_string(round_nplaces(data[i].x + valueToChangeIfNotFound, numberOfDigitsForHashMapKey));
-                hasBeenFound = FindLandmarkForVertexinHashMap(landmarkPerX, data[i], hashKey);
+                hasBeenFound = FindLandmarkForVertexinHashMap(landmarkPerX, data[i], hashKey, DistanceThreshold);
             }
 
             // negative element of hasmap
@@ -206,13 +247,15 @@ int CheckIfMatchesAreWorking(sfmData::Landmarks& landmarks, std::vector<Point3d>
             {
                 hashKey =
                     std::to_string(round_nplaces(data[i].x - valueToChangeIfNotFound, numberOfDigitsForHashMapKey));
-                hasBeenFound = FindLandmarkForVertexinHashMap(landmarkPerX, data[i], hashKey);
+                hasBeenFound = FindLandmarkForVertexinHashMap(landmarkPerX, data[i], hashKey, DistanceThreshold);
             }
 
             // file = std::to_string(data[i].x);
 
             if(!hasBeenFound)
             {
+                ALICEVISION_LOG_DEBUG("Vertex:" + std::to_string(i) + " didn't found match");
+
                 counter++;
             }
         }
@@ -724,35 +767,35 @@ int main(int argc, char* argv[])
         ALICEVISION_LOG_INFO("Export JSON Landmark Matches took " + std::to_string(timerLandmarkMatches.elapsed()) +
                              "s");
 
-        // int counter = 0;
-        // const sfmData::Landmarks& landmarks = sfmData.getLandmarks();
-        // const std::vector<Point3d>& data = mesh->pts->getData();
-        // for(int i = 0; i < data.size(); ++i)
-        //{
-        //    /*if(data[i].id >= landmarks.size())
-        //    {
-        //        counter++;
-        //        continue;
-        //    }*/
+    //     int counter = 0;
+    //     const sfmData::Landmarks& landmarks = sfmData.getLandmarks();
+    //     const std::vector<Point3d>& data = mesh->pts->getData();
+    //     for(int i = 0; i < data.size(); ++i)
+    //    {
+    //        /*if(data[i].id >= landmarks.size())
+    //        {
+    //            counter++;
+    //            continue;
+    //        }*/
 
-        //    if(!CheckIfPoseTheSame(data[i], landmarks.at(data[i].id).X))
-        //    {
-        //        ALICEVISION_LOG_INFO(std::to_string(data[i].x) + "," + std::to_string(data[i].y) + "," +
-        //                             std::to_string(data[i].z) + " vs " +
-        //                             std::to_string(landmarks.at(data[i].id).X[0]) + "," +
-        //                             std::to_string(landmarks.at(data[i].id).X[1]) + "," +
-        //                             std::to_string(landmarks.at(data[i].id).X[2]));
-        //        counter++;
-        //    }
-        //}
-        // ALICEVISION_LOG_INFO(std::to_string(counter) + " vs " + std::to_string(mesh->pts->size()));
+    //        if(GetDistanceBetweenPoints(data[i], landmarks.at(data[i].id).X) >= 0.0001f)
+    //        {
+    //            ALICEVISION_LOG_INFO(std::to_string(data[i].x) + "," + std::to_string(data[i].y) + "," +
+    //                                 std::to_string(data[i].z) + " vs " +
+    //                                 std::to_string(landmarks.at(data[i].id).X[0]) + "," +
+    //                                 std::to_string(landmarks.at(data[i].id).X[1]) + "," +
+    //                                 std::to_string(landmarks.at(data[i].id).X[2]));
+    //            counter++;
+    //        }
+    //    }
+    //     ALICEVISION_LOG_INFO(std::to_string(counter) + " vs " + std::to_string(mesh->pts->size()));
 
-        // ALICEVISION_LOG_INFO(std::to_string(sfmData.getLandmarks()[mesh->pts->getData()[0].id].X[0]) +
-        //                     std::to_string(sfmData.getLandmarks()[mesh->pts->getData()[0].id].X[1]) +
-        //                     std::to_string(sfmData.getLandmarks()[mesh->pts->getData()[0].id].X[2])
-        //                     + " Landmark| Point " + std::to_string(mesh->pts->getData()[0].x) +
-        //                     std::to_string(mesh->pts->getData()[0].y) +
-        //                     std::to_string(mesh->pts->getData()[0].z));
+    //     ALICEVISION_LOG_INFO(std::to_string(sfmData.getLandmarks()[mesh->pts->getData()[0].id].X[0]) +
+    //                         std::to_string(sfmData.getLandmarks()[mesh->pts->getData()[0].id].X[1]) +
+    //                         std::to_string(sfmData.getLandmarks()[mesh->pts->getData()[0].id].X[2])
+    //                         + " Landmark| Point " + std::to_string(mesh->pts->getData()[0].x) +
+    //                         std::to_string(mesh->pts->getData()[0].y) +
+    //                         std::to_string(mesh->pts->getData()[0].z));
     }
 
     ALICEVISION_LOG_INFO("Save obj mesh file.");
