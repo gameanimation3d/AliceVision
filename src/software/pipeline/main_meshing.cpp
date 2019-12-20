@@ -99,57 +99,19 @@ inline double& GetDistanceBetweenPoints(const Point3d& point3D, const Vec3& land
     return distance;
 }
 
-//inline bool CheckIfPoseTheSame(const Point3d& point3D, const Vec3& landmark)
-//{
-//    double not_1 = point3D.x;
-//    double not_2 = landmark[0];
-//
-//    double round_1 = round_nplaces(point3D.x, 6);
-//    double round_2 = round_nplaces(landmark[0], 6);
-//    double difference = round_1 - round_2;
-//
-//    if(round_nplaces(point3D.x, 6) - round_nplaces(landmark[0], 6) >= 0.00001f)
-//    {
-//        return false;
-//    }
-//
-//    not_1 = point3D.y;
-//    not_2 = landmark[1];
-//
-//    round_1 = round_nplaces(point3D.y, 6);
-//    round_2 = round_nplaces(landmark[1], 6);
-//    difference = round_1 - round_2;
-//
-//    if(round_nplaces(point3D.y, 6) - round_nplaces(landmark[1], 6) >= 0.00001f)
-//    {
-//        return false;
-//    }
-//
-//    not_1 = point3D.z;
-//    not_2 = landmark[2];
-//
-//    round_1 = round_nplaces(point3D.z, 6);
-//    round_2 = round_nplaces(landmark[2], 6);
-//    difference = round_1 - round_2;
-//
-//    if(round_nplaces(point3D.z, 6) - round_nplaces(landmark[2], 6) >= 0.00001f)
-//    {
-//        return false;
-//    }
-//    return true;
-//}
-
 bool FindLandmarkForVertexinHashMap(HashMap<std::string, std::vector<sfmData::Landmark>>& landmarkPerX, Point3d& point,
                                     std::string inputKey,const float DistanceThreshold)
 {
-
+    //checks haskey is available
     if(landmarkPerX.find(inputKey) != landmarkPerX.end())
     {
+        //get landmarks for particular x key
         std::vector<sfmData::Landmark>& pointInSameXspace = landmarkPerX.at(inputKey);
 
         double smallestDistance = 1;
         int smallestDistanceIndex = 0;
         double distance = 0;
+        //iterate over landmark find the smallest distance 
         for(int j = 0; j < pointInSameXspace.size(); ++j)
         {
             double distance = GetDistanceBetweenPoints(point, pointInSameXspace[j].X);
@@ -159,15 +121,9 @@ bool FindLandmarkForVertexinHashMap(HashMap<std::string, std::vector<sfmData::La
                 smallestDistance = distance;
                 smallestDistanceIndex = j;
             }
-
-            
-            /*if(CheckIfPoseTheSame(point, pointInSameXspace[j].X))
-            {
-                point.id = pointInSameXspace[j].m_RawIndex;
-                return true;
-            }*/
         }
 
+        //if smallest distance under min distance threshold
         if(smallestDistance < DistanceThreshold)
         {
             point.id = pointInSameXspace[smallestDistanceIndex].m_RawIndex;
@@ -179,7 +135,6 @@ bool FindLandmarkForVertexinHashMap(HashMap<std::string, std::vector<sfmData::La
             return false;
         }
 
-        // counter++;
     }
 
     return false;
@@ -196,7 +151,8 @@ int CheckIfMatchesAreWorking(sfmData::Landmarks& landmarks, std::vector<Point3d>
     ALICEVISION_LOG_INFO("Start Setup of Hashmap for Landmarks by X");
 
     float convertedDouble = 0;
-    //#pragma omp parallel for
+
+    //iterate ove all landmarks -> populate HashMap with X Position as Hashkey rounded
     for(int i = 0; i < landmarks.size(); ++i)
     {
         landmarks[i].m_RawIndex = i;
@@ -210,22 +166,17 @@ int CheckIfMatchesAreWorking(sfmData::Landmarks& landmarks, std::vector<Point3d>
 
     ALICEVISION_LOG_DEBUG("Finish Setup of Hashmap for Landmarks by X");
 
-    //#pragma omp parallel for
-    // iterate over vertices
     Point3d point = data[0];
     const float DistanceThreshold = 0.0001f;
-
+    
+    // iterate over vertices
     ALICEVISION_LOG_DEBUG("Start Loop through Vertices");
     for(int i = 0; i < data.size()-1; ++i)
     {
         hasBeenFound = false;
         point = data[i];
 
-        if(i >= 7905 && i < 7907)
-        {
-            hasBeenFound = false;
-        }
-
+        //check if the already match by LandmarkID is okay
         if(GetDistanceBetweenPoints(data[i], landmarks[data[i].id].X) >= DistanceThreshold)
         {
             ALICEVISION_LOG_DEBUG("Vertex:" + std::to_string(i) + " find correct match");
@@ -754,10 +705,8 @@ int main(int argc, char* argv[])
     {
         ALICEVISION_LOG_INFO("Start Checking if Landmark and Vertex matches are correct.");
 
-        // mesh->saveLandmarkMatchingFile(sfmData.getLandmarks(),densePointCloud.getLandmarks(),
-        // LandmarkMatchingFilePath);
         int count = CheckIfMatchesAreWorking(sfmData.getLandmarks(), mesh->pts->getDataWritable());
-        ALICEVISION_LOG_INFO(std::to_string(count));
+        ALICEVISION_LOG_INFO("Count how many Vertices maybe couldn't be matched with Landmark: " + std::to_string(count));
 
         ALICEVISION_LOG_INFO("Start Save JSON Landmark matches.");
         aliceVision::system::Timer timerLandmarkMatches;
