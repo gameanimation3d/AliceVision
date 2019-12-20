@@ -285,132 +285,132 @@ int main(int argc, char* argv[])
 
     fuseCut::FuseParams fuseParams;
 
-    sfmDataFilename =
-        "M:/Repo/GitRepos/SFMVisualizer_dev_Triangulation/external/SFM/aliceVision/data/cloud_and_poses.sfm";
-    outputMesh = "M:/Repo/GitRepos/SFMVisualizer_dev_Triangulation/external/SFM/aliceVision/data/sparseMesh.obj";
-    LandmarkMatchingFilePath =
-        "M:/Repo/GitRepos/SFMVisualizer_dev_Triangulation/external/SFM/aliceVision/data/landmarkMatches.json";
-    colorizeOutput = true;
+    //sfmDataFilename =
+    //    "M:/Repo/GitRepos/SFMVisualizer_dev_Triangulation/external/SFM/aliceVision/data/cloud_and_poses.sfm";
+    //outputMesh = "M:/Repo/GitRepos/SFMVisualizer_dev_Triangulation/external/SFM/aliceVision/data/sparseMesh.obj";
+    //LandmarkMatchingFilePath =
+    //    "M:/Repo/GitRepos/SFMVisualizer_dev_Triangulation/external/SFM/aliceVision/data/landmarkMatches.json";
+    //colorizeOutput = true;
 
-    // po::options_description allParams("AliceVision meshing");
+     po::options_description allParams("AliceVision meshing");
 
-    // po::options_description requiredParams("Required parameters");
-    // requiredParams.add_options()
-    //    ("input,i", po::value<std::string>(&sfmDataFilename)->required(),
-    //      "SfMData file.")
-    //    //("output,o", po::value<std::string>(&outputDensePointCloud)->required(),
-    //    //  "Output Dense SfMData file.")
-    //    ("outputMesh,o", po::value<std::string>(&outputMesh)->required(),
-    //      "Output mesh (OBJ file format).");
+     po::options_description requiredParams("Required parameters");
+     requiredParams.add_options()
+        ("input,i", po::value<std::string>(&sfmDataFilename)->required(),
+          "SfMData file.")
+        //("output,o", po::value<std::string>(&outputDensePointCloud)->required(),
+        //  "Output Dense SfMData file.")
+        ("outputMesh,o", po::value<std::string>(&outputMesh)->required(),
+          "Output mesh (OBJ file format).");
 
-    // po::options_description optionalParams("Optional parameters");
-    // optionalParams.add_options()
-    //    ("depthMapsFolder", po::value<std::string>(&depthMapsFolder),
-    //        "Input depth maps folder.")
-    //    ("depthMapsFilterFolder", po::value<std::string>(&depthMapsFilterFolder),
-    //        "Input filtered depth maps folder.")
-    //    ("maxInputPoints", po::value<int>(&fuseParams.maxInputPoints)->default_value(fuseParams.maxInputPoints),
-    //        "Max input points loaded from images.")
-    //    ("maxPoints", po::value<int>(&fuseParams.maxPoints)->default_value(fuseParams.maxPoints),
-    //        "Max points at the end of the depth maps fusion.")
-    //    ("maxPointsPerVoxel", po::value<int>(&maxPtsPerVoxel)->default_value(maxPtsPerVoxel),
-    //        "Max points per voxel.")
-    //    ("minStep", po::value<int>(&fuseParams.minStep)->default_value(fuseParams.minStep),
-    //        "The step used to load depth values from depth maps is computed from maxInputPts. Here we define the
-    //        minimal value for this step, " "so on small datasets we will not spend too much time at the beginning
-    //        loading all depth values.")
-    //    ("simFactor", po::value<float>(&fuseParams.simFactor)->default_value(fuseParams.simFactor),
-    //        "simFactor")
-    //    ("angleFactor", po::value<float>(&fuseParams.angleFactor)->default_value(fuseParams.angleFactor),
-    //        "angleFactor")
-    //    ("partitioning", po::value<EPartitioningMode>(&partitioningMode)->default_value(partitioningMode),
-    //        "Partitioning: 'singleBlock' or 'auto'.")
-    //    ("repartition", po::value<ERepartitionMode>(&repartitionMode)->default_value(repartitionMode),
-    //        "Repartition: 'multiResolution' or 'regularGrid'.")
-    //    ("estimateSpaceFromSfM", po::value<bool>(&estimateSpaceFromSfM)->default_value(estimateSpaceFromSfM),
-    //        "Estimate the 3d space from the SfM.")
-    //    ("addLandmarksToTheDensePointCloud",
-    //    po::value<bool>(&addLandmarksToTheDensePointCloud)->default_value(addLandmarksToTheDensePointCloud),
-    //        "Add SfM Landmarks into the dense point cloud (created from depth maps). If only the SfM is provided
-    //        in input, SfM landmarks will be used regardless of this option.")
-    //    ("colorizeOutput", po::value<bool>(&colorizeOutput)->default_value(colorizeOutput),
-    //    "Whether to colorize output dense point cloud and mesh.")
-    //    ("landmarkMatchesFile", po::value<std::string>(&LandmarkMatchingFilePath),
-    //    "Export Landmark Matching File finding the Landmark in the OBJ by index.");
+     po::options_description optionalParams("Optional parameters");
+     optionalParams.add_options()
+        ("depthMapsFolder", po::value<std::string>(&depthMapsFolder),
+            "Input depth maps folder.")
+        ("depthMapsFilterFolder", po::value<std::string>(&depthMapsFilterFolder),
+            "Input filtered depth maps folder.")
+        ("maxInputPoints", po::value<int>(&fuseParams.maxInputPoints)->default_value(fuseParams.maxInputPoints),
+            "Max input points loaded from images.")
+        ("maxPoints", po::value<int>(&fuseParams.maxPoints)->default_value(fuseParams.maxPoints),
+            "Max points at the end of the depth maps fusion.")
+        ("maxPointsPerVoxel", po::value<int>(&maxPtsPerVoxel)->default_value(maxPtsPerVoxel),
+            "Max points per voxel.")
+        ("minStep", po::value<int>(&fuseParams.minStep)->default_value(fuseParams.minStep),
+            "The step used to load depth values from depth maps is computed from maxInputPts. Here we define the
+            minimal value for this step, " "so on small datasets we will not spend too much time at the beginning
+            loading all depth values.")
+        ("simFactor", po::value<float>(&fuseParams.simFactor)->default_value(fuseParams.simFactor),
+            "simFactor")
+        ("angleFactor", po::value<float>(&fuseParams.angleFactor)->default_value(fuseParams.angleFactor),
+            "angleFactor")
+        ("partitioning", po::value<EPartitioningMode>(&partitioningMode)->default_value(partitioningMode),
+            "Partitioning: 'singleBlock' or 'auto'.")
+        ("repartition", po::value<ERepartitionMode>(&repartitionMode)->default_value(repartitionMode),
+            "Repartition: 'multiResolution' or 'regularGrid'.")
+        ("estimateSpaceFromSfM", po::value<bool>(&estimateSpaceFromSfM)->default_value(estimateSpaceFromSfM),
+            "Estimate the 3d space from the SfM.")
+        ("addLandmarksToTheDensePointCloud",
+        po::value<bool>(&addLandmarksToTheDensePointCloud)->default_value(addLandmarksToTheDensePointCloud),
+            "Add SfM Landmarks into the dense point cloud (created from depth maps). If only the SfM is provided
+            in input, SfM landmarks will be used regardless of this option.")
+        ("colorizeOutput", po::value<bool>(&colorizeOutput)->default_value(colorizeOutput),
+        "Whether to colorize output dense point cloud and mesh.")
+        ("landmarkMatchesFile", po::value<std::string>(&LandmarkMatchingFilePath),
+        "Export Landmark Matching File finding the Landmark in the OBJ by index.");
 
-    // po::options_description advancedParams("Advanced parameters");
-    // advancedParams.add_options()
-    //    ("universePercentile", po::value<double>(&universePercentile)->default_value(universePercentile),
-    //        "universe percentile")
-    //    ("estimateSpaceMinObservations",
-    //    po::value<std::size_t>(&estimateSpaceMinObservations)->default_value(estimateSpaceMinObservations),
-    //        "Minimum number of observations for SfM space estimation.")
-    //    ("estimateSpaceMinObservationAngle",
-    //    po::value<float>(&estimateSpaceMinObservationAngle)->default_value(estimateSpaceMinObservationAngle),
-    //        "Minimum angle between two observations for SfM space estimation.")
-    //    ("pixSizeMarginInitCoef",
-    //    po::value<double>(&fuseParams.pixSizeMarginInitCoef)->default_value(fuseParams.pixSizeMarginInitCoef),
-    //        "pixSizeMarginInitCoef")
-    //    ("pixSizeMarginFinalCoef",
-    //    po::value<double>(&fuseParams.pixSizeMarginFinalCoef)->default_value(fuseParams.pixSizeMarginFinalCoef),
-    //        "pixSizeMarginFinalCoef")
-    //    ("voteMarginFactor",
-    //    po::value<float>(&fuseParams.voteMarginFactor)->default_value(fuseParams.voteMarginFactor),
-    //        "voteMarginFactor")
-    //    ("contributeMarginFactor",
-    //    po::value<float>(&fuseParams.contributeMarginFactor)->default_value(fuseParams.contributeMarginFactor),
-    //        "contributeMarginFactor")
-    //    ("simGaussianSizeInit",
-    //    po::value<float>(&fuseParams.simGaussianSizeInit)->default_value(fuseParams.simGaussianSizeInit),
-    //        "simGaussianSizeInit")
-    //    ("simGaussianSize",
-    //    po::value<float>(&fuseParams.simGaussianSize)->default_value(fuseParams.simGaussianSize),
-    //        "simGaussianSize")
-    //    ("minAngleThreshold",
-    //    po::value<double>(&fuseParams.minAngleThreshold)->default_value(fuseParams.minAngleThreshold),
-    //        "minAngleThreshold")
-    //    ("refineFuse", po::value<bool>(&fuseParams.refineFuse)->default_value(fuseParams.refineFuse),
-    //        "refineFuse")
-    //    ("saveRawDensePointCloud",
-    //    po::value<bool>(&saveRawDensePointCloud)->default_value(saveRawDensePointCloud),
-    //        "Save dense point cloud before cut and filtering.");
+     po::options_description advancedParams("Advanced parameters");
+     advancedParams.add_options()
+        ("universePercentile", po::value<double>(&universePercentile)->default_value(universePercentile),
+            "universe percentile")
+        ("estimateSpaceMinObservations",
+        po::value<std::size_t>(&estimateSpaceMinObservations)->default_value(estimateSpaceMinObservations),
+            "Minimum number of observations for SfM space estimation.")
+        ("estimateSpaceMinObservationAngle",
+        po::value<float>(&estimateSpaceMinObservationAngle)->default_value(estimateSpaceMinObservationAngle),
+            "Minimum angle between two observations for SfM space estimation.")
+        ("pixSizeMarginInitCoef",
+        po::value<double>(&fuseParams.pixSizeMarginInitCoef)->default_value(fuseParams.pixSizeMarginInitCoef),
+            "pixSizeMarginInitCoef")
+        ("pixSizeMarginFinalCoef",
+        po::value<double>(&fuseParams.pixSizeMarginFinalCoef)->default_value(fuseParams.pixSizeMarginFinalCoef),
+            "pixSizeMarginFinalCoef")
+        ("voteMarginFactor",
+        po::value<float>(&fuseParams.voteMarginFactor)->default_value(fuseParams.voteMarginFactor),
+            "voteMarginFactor")
+        ("contributeMarginFactor",
+        po::value<float>(&fuseParams.contributeMarginFactor)->default_value(fuseParams.contributeMarginFactor),
+            "contributeMarginFactor")
+        ("simGaussianSizeInit",
+        po::value<float>(&fuseParams.simGaussianSizeInit)->default_value(fuseParams.simGaussianSizeInit),
+            "simGaussianSizeInit")
+        ("simGaussianSize",
+        po::value<float>(&fuseParams.simGaussianSize)->default_value(fuseParams.simGaussianSize),
+            "simGaussianSize")
+        ("minAngleThreshold",
+        po::value<double>(&fuseParams.minAngleThreshold)->default_value(fuseParams.minAngleThreshold),
+            "minAngleThreshold")
+        ("refineFuse", po::value<bool>(&fuseParams.refineFuse)->default_value(fuseParams.refineFuse),
+            "refineFuse")
+        ("saveRawDensePointCloud",
+        po::value<bool>(&saveRawDensePointCloud)->default_value(saveRawDensePointCloud),
+            "Save dense point cloud before cut and filtering.");
 
-    // po::options_description logParams("Log parameters");
-    // logParams.add_options()
-    //  ("verboseLevel,v", po::value<std::string>(&verboseLevel)->default_value(verboseLevel),
-    //    "verbosity level (fatal, error, warning, info, debug, trace).");
+     po::options_description logParams("Log parameters");
+     logParams.add_options()
+      ("verboseLevel,v", po::value<std::string>(&verboseLevel)->default_value(verboseLevel),
+        "verbosity level (fatal, error, warning, info, debug, trace).");
 
-    // allParams.add(requiredParams).add(optionalParams).add(advancedParams).add(logParams);
+     allParams.add(requiredParams).add(optionalParams).add(advancedParams).add(logParams);
 
-    // po::variables_map vm;
+     po::variables_map vm;
 
-    // try
-    //{
-    //  po::store(po::parse_command_line(argc, argv, allParams), vm);
+     try
+    {
+      po::store(po::parse_command_line(argc, argv, allParams), vm);
 
-    //  if(vm.count("help") || (argc == 1))
-    //  {
-    //    ALICEVISION_COUT(allParams);
-    //    return EXIT_SUCCESS;
-    //  }
+      if(vm.count("help") || (argc == 1))
+      {
+        ALICEVISION_COUT(allParams);
+        return EXIT_SUCCESS;
+      }
 
-    //  po::notify(vm);
-    //}
-    // catch(boost::program_options::required_option& e)
-    //{
-    //  ALICEVISION_CERR("ERROR: " << e.what() << std::endl);
-    //  ALICEVISION_COUT("Usage:\n\n" << allParams);
-    //  return EXIT_FAILURE;
-    //}
-    // catch(boost::program_options::error& e)
-    //{
-    //  ALICEVISION_CERR("ERROR: " << e.what() << std::endl);
-    //  ALICEVISION_COUT("Usage:\n\n" << allParams);
-    //  return EXIT_FAILURE;
-    //}
+      po::notify(vm);
+    }
+     catch(boost::program_options::required_option& e)
+    {
+      ALICEVISION_CERR("ERROR: " << e.what() << std::endl);
+      ALICEVISION_COUT("Usage:\n\n" << allParams);
+      return EXIT_FAILURE;
+    }
+     catch(boost::program_options::error& e)
+    {
+      ALICEVISION_CERR("ERROR: " << e.what() << std::endl);
+      ALICEVISION_COUT("Usage:\n\n" << allParams);
+      return EXIT_FAILURE;
+    }
 
-    // ALICEVISION_COUT("Program called with the following parameters:");
-    // ALICEVISION_COUT(vm);
+     ALICEVISION_COUT("Program called with the following parameters:");
+     ALICEVISION_COUT(vm);
 
     // set verbose level
     system::Logger::get()->setLogLevel(verboseLevel);
