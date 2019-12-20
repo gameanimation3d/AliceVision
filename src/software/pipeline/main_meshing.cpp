@@ -316,9 +316,7 @@ int main(int argc, char* argv[])
         ("maxPointsPerVoxel", po::value<int>(&maxPtsPerVoxel)->default_value(maxPtsPerVoxel),
             "Max points per voxel.")
         ("minStep", po::value<int>(&fuseParams.minStep)->default_value(fuseParams.minStep),
-            "The step used to load depth values from depth maps is computed from maxInputPts. Here we define the
-            minimal value for this step, " "so on small datasets we will not spend too much time at the beginning
-            loading all depth values.")
+            "The step used to load depth values from depth maps is computed from maxInputPts. Here we define the minimal value for this step, " "so on small datasets we will not spend too much time at the beginning loading all depth values.")
         ("simFactor", po::value<float>(&fuseParams.simFactor)->default_value(fuseParams.simFactor),
             "simFactor")
         ("angleFactor", po::value<float>(&fuseParams.angleFactor)->default_value(fuseParams.angleFactor),
@@ -331,8 +329,7 @@ int main(int argc, char* argv[])
             "Estimate the 3d space from the SfM.")
         ("addLandmarksToTheDensePointCloud",
         po::value<bool>(&addLandmarksToTheDensePointCloud)->default_value(addLandmarksToTheDensePointCloud),
-            "Add SfM Landmarks into the dense point cloud (created from depth maps). If only the SfM is provided
-            in input, SfM landmarks will be used regardless of this option.")
+            "Add SfM Landmarks into the dense point cloud (created from depth maps). If only the SfM is provided in input, SfM landmarks will be used regardless of this option.")
         ("colorizeOutput", po::value<bool>(&colorizeOutput)->default_value(colorizeOutput),
         "Whether to colorize output dense point cloud and mesh.")
         ("landmarkMatchesFile", po::value<std::string>(&LandmarkMatchingFilePath),
