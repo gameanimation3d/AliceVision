@@ -1346,9 +1346,12 @@ double Mesh::computeTriangleMinEdgeLength(int idTri) const
 StaticVector<Point3d>* Mesh::computeNormalsForPts()
 {
     StaticVector<StaticVector<int>*>* ptsNeighTris = getPtsNeighborTriangles();
+    StaticVector<StaticVector<int>*>* ptsNeighPts = getPtsNeighPtsOrdered();
+
     StaticVector<Point3d>* nms = computeNormalsForPts(ptsNeighTris);
-    smoothNormals(nms, ptsNeighTris);
+    smoothNormals(nms, ptsNeighPts);
     deleteArrayOfArrays<int>(&ptsNeighTris);
+    deleteArrayOfArrays<int>(&ptsNeighPts);
     m_Normals = nms;
     return nms;
 }
