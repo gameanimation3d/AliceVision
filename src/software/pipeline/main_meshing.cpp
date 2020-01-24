@@ -697,6 +697,10 @@ int main(int argc, char* argv[])
     removeLandmarksWithoutObservations(densePointCloud);
     ALICEVISION_LOG_INFO("Save dense point cloud.");
     sfmDataIO::Save(densePointCloud, outputDensePointCloud, sfmDataIO::ESfMData::ALL_DENSE);
+    
+    ALICEVISION_LOG_INFO("Calculate Normals.");
+    mesh->computeNormalsForPts();
+
 
     if(!LandmarkMatchingFilePath.empty())
     {

@@ -41,7 +41,7 @@ void Mesh::saveToObj(const std::string& filename)
 
     fprintf(f, "# \n");
     fprintf(f, "# Wavefront OBJ file\n");
-    fprintf(f, "# Created with AliceVision\n");
+    fprintf(f, "# Created with AliceVision + Custom Version 1.1\n");
     fprintf(f, "# \n");
     fprintf(f, "g Mesh\n");
 
@@ -67,6 +67,15 @@ void Mesh::saveToObj(const std::string& filename)
         Mesh::triangle& t = (*tris)[i];
         fprintf(f, "f %i %i %i\n", t.v[0] + 1, t.v[1] + 1, t.v[2] + 1);
     }
+
+    if(m_Normals != nullptr)
+    {
+        for(const auto& normal : *m_Normals)
+        {
+            fprintf(f, "vn %f %f %f\n", normal.x, normal.y, normal.z);
+        }
+    }
+
     fclose(f);
     ALICEVISION_LOG_INFO("Save mesh to obj done.");
 }
@@ -1339,6 +1348,7 @@ StaticVector<Point3d>* Mesh::computeNormalsForPts()
     StaticVector<StaticVector<int>*>* ptsNeighTris = getPtsNeighborTriangles();
     StaticVector<Point3d>* nms = computeNormalsForPts(ptsNeighTris);
     deleteArrayOfArrays<int>(&ptsNeighTris);
+    m_Normals = nms;
     return nms;
 }
 

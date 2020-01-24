@@ -111,6 +111,8 @@ public:
     StaticVector<Point3d>* pts = nullptr;
     StaticVector<Mesh::triangle>* tris = nullptr;
 
+    StaticVector<Point3d>* m_Normals = nullptr;
+
     Mesh();
     ~Mesh();
 
