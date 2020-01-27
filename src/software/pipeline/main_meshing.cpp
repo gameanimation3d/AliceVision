@@ -697,9 +697,14 @@ int main(int argc, char* argv[])
     removeLandmarksWithoutObservations(densePointCloud);
     ALICEVISION_LOG_INFO("Save dense point cloud.");
     sfmDataIO::Save(densePointCloud, outputDensePointCloud, sfmDataIO::ESfMData::ALL_DENSE);
-    
+
+    ALICEVISION_LOG_INFO("Check Mesh for incossitent triangle order.");
+    int counterOfConflicts  = mesh->checkForWindingIssueInMesh();
+    ALICEVISION_LOG_INFO("Finish mesh triangle order check. Conflicts:" + std::to_string(counterOfConflicts));
+
     ALICEVISION_LOG_INFO("Calculate Normals.");
     mesh->computeNormalsForPts();
+    ALICEVISION_LOG_INFO("Finish normal calculation");
 
 
     if(!LandmarkMatchingFilePath.empty())

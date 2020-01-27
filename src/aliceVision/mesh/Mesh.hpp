@@ -227,6 +227,11 @@ public:
 
     bool getEdgeNeighTrisInterval(Pixel& itr, Pixel edge, StaticVector<Voxel>* edgesXStat,
                                   StaticVector<Voxel>* edgesXYStat);
+
+    bool doWeHaveAWindingConflict(Mesh::triangle& t1, Mesh::triangle& t2);
+    void flipWindingOrderOfTriangle(Mesh::triangle& triangle);
+    int checkForWindingIssueInMesh();
+
 };
 
 } // namespace mesh

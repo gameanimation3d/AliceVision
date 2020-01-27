@@ -41,7 +41,7 @@ void Mesh::saveToObj(const std::string& filename)
 
     fprintf(f, "# \n");
     fprintf(f, "# Wavefront OBJ file\n");
-    fprintf(f, "# Created with AliceVision + Custom Version 1.2\n");
+    fprintf(f, "# Created with AliceVision + Custom Version 1.3\n");
     fprintf(f, "# \n");
     fprintf(f, "g Mesh\n");
 
@@ -62,18 +62,18 @@ void Mesh::saveToObj(const std::string& filename)
             fprintf(f, "v %f %f %f\n", point.x, point.y, point.z);
     }
 
-    for(int i = 0; i < tris->size(); i++)
-    {
-        Mesh::triangle& t = (*tris)[i];
-        fprintf(f, "f %i %i %i\n", t.v[0] + 1, t.v[1] + 1, t.v[2] + 1);
-    }
-
     if(m_Normals != nullptr)
     {
         for(const auto& normal : *m_Normals)
         {
             fprintf(f, "vn %f %f %f\n", normal.x, normal.y, normal.z);
         }
+    }
+
+    for(int i = 0; i < tris->size(); i++)
+    {
+        Mesh::triangle& t = (*tris)[i];
+        fprintf(f, "f %i %i %i\n", t.v[0] + 1, t.v[1] + 1, t.v[2] + 1);
     }
 
     fclose(f);
@@ -88,12 +88,12 @@ void Mesh::saveLandmarkMatchingFile(sfmData::Landmarks& oldlandmarks, sfmData::L
     fs.open(exportFileName);
 
     fs << "Obj Index "
-               << "Landmark ID" << std::endl;
+       << "Landmark ID" << std::endl;
 
     const std::vector<Point3d>& data = pts->getData();
 
     // Iterate vertex ID
-//#pragma omp for
+    //#pragma omp for
     for(int i = 0; i < pts->size(); ++i)
     {
         fs << i << " " << data[i].id << std::endl;
@@ -2742,6 +2742,66 @@ bool Mesh::getEdgeNeighTrisInterval(Pixel& itr, Pixel edge, StaticVector<Voxel>*
     }
 
     return true;
+}
+
+int Mesh::checkForWindingIssueInMesh()
+{
+    int counterOfConflicts = 0;
+
+    //StaticVector<Mesh::triangle*> testTriangle;
+
+    //testTriangle.push_back(new triangle(1, 2, 3));
+    //testTriangle.push_back(new triangle(3, 2, 4));
+    //testTriangle.push_back(new triangle(3, 5, 4));
+
+    for(int i = 1; i < tris->size(); i++)
+    {
+        Mesh::triangle& originTforWindingDirection = (*tris)[i - 1];
+        Mesh::triangle& currentTriangle = (*tris)[i];
+
+        if(doWeHaveAWindingConflict(originTforWindingDirection, currentTriangle))
+        {
+            flipWindingOrderOfTriangle(currentTriangle);
+            counterOfConflicts++;
+        }
+    }
+    return counterOfConflicts;
+}
+
+void Mesh::flipWindingOrderOfTriangle(Mesh::triangle& triangle)
+{
+    int index0 = triangle.v[0];
+    int index1 = triangle.v[1];
+    int index2 = triangle.v[2];
+
+    triangle.v[0] = index1;
+    triangle.v[1] = index0;
+    triangle.v[2] = index2;
+}
+
+bool Mesh::doWeHaveAWindingConflict(Mesh::triangle& t1, Mesh::triangle& t2)
+{
+    int tr1Index = 0;
+    int tr2Index = 0;
+
+    // first triangle
+    for(int index1 = 0; index1 < 3; index1++)
+    {
+        tr1Index = (index1 + 1) % 3;
+
+        // 2nd triangle
+        for(int index2 = 0; index2 < 3; index2++)
+        {
+            tr2Index = (index2 + 1) % 3;
+
+            if(t1.v[index2] == t2.v[index1] && t1.v[tr2Index] == t2.v[tr1Index])
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 } // namespace mesh
