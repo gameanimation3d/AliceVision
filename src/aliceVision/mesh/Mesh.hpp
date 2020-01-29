@@ -13,6 +13,7 @@
 #include <aliceVision/mvsData/StaticVector.hpp>
 #include <aliceVision/mvsData/Voxel.hpp>
 #include <aliceVision/mvsUtils/common.hpp>
+#include "aliceVision/sfmData/SfMData.hpp"
 
 namespace aliceVision {
 namespace mesh {
@@ -110,11 +111,15 @@ public:
     StaticVector<Point3d>* pts = nullptr;
     StaticVector<Mesh::triangle>* tris = nullptr;
 
+    StaticVector<Point3d>* m_Normals = nullptr;
+
     Mesh();
     ~Mesh();
 
     void saveToObj(const std::string& filename);
 
+    void saveLandmarkMatchingFile(sfmData::Landmarks& oldlandmarks, sfmData::Landmarks& newlandmarks,
+                                  std::string exportFileName);
     bool loadFromBin(std::string binFileName);
     void saveToBin(std::string binFileName);
     bool loadFromObjAscii(int& nmtls, StaticVector<int>& trisMtlIds, StaticVector<Point3d>& normals,
@@ -222,6 +227,11 @@ public:
 
     bool getEdgeNeighTrisInterval(Pixel& itr, Pixel edge, StaticVector<Voxel>* edgesXStat,
                                   StaticVector<Voxel>* edgesXYStat);
+
+    bool doWeHaveAWindingConflict(Mesh::triangle& t1, Mesh::triangle& t2);
+    void flipWindingOrderOfTriangle(Mesh::triangle& triangle);
+    int checkForWindingIssueInMesh();
+
 };
 
 } // namespace mesh

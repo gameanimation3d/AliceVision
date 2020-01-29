@@ -14,12 +14,14 @@ namespace aliceVision {
 class Point3d
 {
 public:
+   
     union {
         struct
         {
             double x, y, z;
         };
         double m[3];
+        int id;
     };
 
     inline Point3d()
@@ -28,6 +30,7 @@ public:
         y = 0.0;
         z = 0.0;
     }
+
 
     inline Point3d(double _x, double _y, double _z)
     {
@@ -49,6 +52,13 @@ public:
         y = param.y;
         z = param.z;
         return *this;
+    }
+    inline Point3d(double _x, double _y, double _z, int _id)
+    {
+        x = _x;
+        y = _y;
+        z = _z;
+        id = _id;
     }
 
     inline bool operator==(const Point3d& param)

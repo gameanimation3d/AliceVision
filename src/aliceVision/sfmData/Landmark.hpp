@@ -62,6 +62,11 @@ public:
         m_RSME = *rsme;
         m_RSMECalculated = true;
     }
+
+	void SetObservations(Vec2& observation) 
+	{
+		m_ObservationResidual = &observation;
+	}
 };
 
 /// Observations are indexed by their View_id
@@ -88,6 +93,7 @@ struct Landmark
     {
         m_RSMECalculated = false;
         m_RSME = 0;
+        m_RawIndex = 0;
     }
 
     Vec3 X;
@@ -98,6 +104,7 @@ struct Landmark
     // RMSE
     bool m_RSMECalculated;
     double m_RSME;
+    int m_RawIndex; //index from SFM increment sfm
 
     bool operator==(const Landmark& other) const
     {

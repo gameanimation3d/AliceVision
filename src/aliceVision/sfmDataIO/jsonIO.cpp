@@ -9,7 +9,7 @@
 #include <aliceVision/sfmDataIO/viewIO.hpp>
 
 #include <boost/property_tree/json_parser.hpp>
-
+#include "aliceVision/mvsData/Point3d.hpp"
 #include <memory>
 #include <cassert>
 
@@ -289,6 +289,7 @@ void saveLandmark(const std::string& name, IndexT landmarkId, const sfmData::Lan
 void loadLandmark(IndexT& landmarkId, sfmData::Landmark& landmark, bpt::ptree& landmarkTree, bool loadObservations, bool loadFeatures)
 {
   landmarkId = landmarkTree.get<IndexT>("landmarkId");
+  landmark.m_RSME = std::stod(landmarkTree.get<std::string>("RMSE"));
   landmark.descType = feature::EImageDescriberType_stringToEnum(landmarkTree.get<std::string>("descType"));
 
   loadMatrix("color", landmark.rgb, landmarkTree);
@@ -313,6 +314,38 @@ void loadLandmark(IndexT& landmarkId, sfmData::Landmark& landmark, bpt::ptree& l
     }
   }
 }
+
+bool saveLandmarkVertexMatchJSON(const std::vector<Point3d>& data,
+                                 std::string exportFileName)
+{
+   
+    const Vec3 version = {1, 0, 0};
+
+    // overwhole json tree
+    bpt::ptree fileTree;
+    // file version
+    saveMatrix("version", version, fileTree);
+
+    //
+    bpt::ptree matchesTree;
+    bpt::ptree matchTree;
+
+
+    for(int i = 0; i < data.size(); ++i)
+    {
+        matchTree.put("objIndex", i);
+        matchTree.put("landmarkID", data[i].id);
+        matchesTree.push_back(std::make_pair("", matchTree));
+    }
+    
+    fileTree.add_child("matchesindex", matchesTree);
+
+    // write the json file with the tree
+
+    bpt::write_json(exportFileName, fileTree);
+    return true;
+}
+
 
 
 bool saveStatisticJSON(const sfmData::SfMData& sfmData, const std::string& filename)
@@ -343,18 +376,24 @@ bool saveStatisticJSON(const sfmData::SfMData& sfmData, const std::string& filen
 
 bool saveJSON(const sfmData::SfMData& sfmData, const std::string& filename, ESfMData partFlag)
 {
-  const Vec3 version = {1, 0, 0};
+  const Vec3 version = {1, 1, 0};
 
   // save flags
   const bool saveViews = (partFlag & VIEWS) == VIEWS;
   const bool saveIntrinsics = (partFlag & INTRINSICS) == INTRINSICS;
   const bool saveExtrinsics = (partFlag & EXTRINSICS) == EXTRINSICS;
-  const bool saveStructure = (partFlag & STRUCTURE) == STRUCTURE;
+  //const bool saveStructure = (partFlag & STRUCTURE) == STRUCTURE;
+  const bool saveStructure = true;
+
   const bool saveControlPoints = (partFlag & CONTROL_POINTS) == CONTROL_POINTS;
-  const bool saveFeatures = (partFlag & OBSERVATIONS_WITH_FEATURES) == OBSERVATIONS_WITH_FEATURES;
-  const bool saveObservations = saveFeatures || ((partFlag & OBSERVATIONS) == OBSERVATIONS);
+  //const bool saveFeatures = (partFlag & OBSERVATIONS_WITH_FEATURES) == OBSERVATIONS_WITH_FEATURES;
+  const bool saveFeatures = true;
 
+  //const bool saveObservations = saveFeatures || ((partFlag & OBSERVATIONS) == OBSERVATIONS);
+  const bool saveObservations = true;
 
+  ALICEVISION_LOG_INFO("SaveStructure Flag");
+  ALICEVISION_LOG_INFO(saveStructure);
   // main tree
   bpt::ptree fileTree;
 
@@ -443,16 +482,21 @@ bool saveJSON(const sfmData::SfMData& sfmData, const std::string& filename, ESfM
       fileTree.add_child("rigs", rigsTree);
     }
   }
+  ALICEVISION_LOG_INFO("Landmarks Empty" );
+  ALICEVISION_LOG_INFO(sfmData.getLandmarks().empty());
 
   // structure
   if(saveStructure && !sfmData.getLandmarks().empty())
   {
     bpt::ptree structureTree;
-
+      ALICEVISION_LOG_INFO("in Loop SaveStructure");
     for(const auto& structurePair : sfmData.getLandmarks())
       saveLandmark("", structurePair.first, structurePair.second, structureTree, saveObservations, saveFeatures);
 
     fileTree.add_child("structure", structureTree);
+    ALICEVISION_LOG_INFO("Number of Childs ");
+    ALICEVISION_LOG_INFO(structureTree.size());
+
   }
 
   // control points
