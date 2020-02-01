@@ -127,7 +127,7 @@ int main(int argc, char **argv)
     oiio::ImageBuf imageBuf;
     image::getBufferFromImage(imageUd, imageBuf);
 
-    image::Image<image::RGBColor> imageProxy(image.Width()/2, image.Height()/2);
+    image::Image<image::RGBColor> imageProxy(image.Width(), image.Height());
     image::Image<image::RGBColor> imageThumbnail(256, image.Height() / (image.Width() / 256.0f)); // width = 256px, keep height ratio
 
     oiio::ImageBuf proxyBuf;
