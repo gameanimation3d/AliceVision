@@ -702,8 +702,8 @@ int main(int argc, char* argv[])
     int counterOfConflicts  = mesh->checkForWindingIssueInMesh();
     ALICEVISION_LOG_INFO("Finish mesh triangle order check. Conflicts:" + std::to_string(counterOfConflicts));
 
-    ALICEVISION_LOG_INFO("Calculate Normals.");
-    mesh->computeNormalsForPts();
+    ALICEVISION_LOG_INFO("Calculate Normals using PCA.");
+    mesh->computeNormalsWithPCA();
     ALICEVISION_LOG_INFO("Finish normal calculation");
 
 

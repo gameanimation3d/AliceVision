@@ -16,6 +16,12 @@
 #include <map>
 #include "aliceVision/sfmData/SfMData.hpp"
 
+#include <pcl/point_types.h>
+#include <pcl/features/normal_3d_omp.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/point_cloud.h>
+#include <pcl/search/kdtree.h>
+
 namespace aliceVision
 {
 namespace mesh
@@ -23,7 +29,10 @@ namespace mesh
 
 namespace bfs = boost::filesystem;
 
-Mesh::Mesh() {}
+Mesh::Mesh()
+{
+    m_Normals = std::make_shared<StaticVector<Point3d>>();
+}
 
 Mesh::~Mesh()
 {
@@ -64,10 +73,16 @@ void Mesh::saveToObj(const std::string& filename)
 
     if(m_Normals != nullptr)
     {
-        for(const auto& normal : *m_Normals)
+        ALICEVISION_LOG_WARNING("Export Normals were found");
+
+		for(const auto& normal : *m_Normals)
         {
             fprintf(f, "vn %f %f %f\n", normal.x, normal.y, normal.z);
         }
+    }
+    else
+	{
+        ALICEVISION_LOG_WARNING("No Normals were found");
     }
 
     for(int i = 0; i < tris->size(); i++)
@@ -1343,6 +1358,78 @@ double Mesh::computeTriangleMinEdgeLength(int idTri) const
                     ((*pts)[(*tris)[idTri].v[2]] - (*pts)[(*tris)[idTri].v[0]]).size());
 }
 
+void Mesh::computeNormalsWithPCA(float searchRadius)
+{
+    // Generate PCL point cloud data remap data
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    cloud->resize(pts->size());
+
+
+    // iterate through AliceVision Points and add point into PCL pointcloud data format
+    for(int i = 0; i < pts->size(); i++)
+    {
+        Point3d& point3D = (*pts)[i];
+
+		cloud->points[i].x = point3D.x;
+        cloud->points[i].y = point3D.y;
+        cloud->points[i].z = point3D.z;
+
+        //pcl::PointXYZ point = pcl::PointXYZ(point3D.x, point3D.y, point3D.z);
+        //cloud->push_back(point);
+    }
+
+	ALICEVISION_LOG_TRACE("PCL Pointcloud has been created with point of AliceVision Data");
+
+    // Create the normal estimation class, and pass the input dataset to it
+    //pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> normalEstimationHelper;
+    pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimationHelper;
+    normalEstimationHelper.setInputCloud(cloud);
+
+    // calc kd tree
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
+    normalEstimationHelper.setSearchMethod(tree);
+    tree->setInputCloud(cloud);
+
+	ALICEVISION_LOG_TRACE("PCL KD-Tree has been calculated");
+
+
+    // Output datasets
+    pcl::PointCloud<pcl::Normal>::Ptr cloud_normals(new pcl::PointCloud<pcl::Normal>);
+
+    // Use all neighbors in a sphere of radius 3cm
+    normalEstimationHelper.setRadiusSearch(searchRadius);
+
+    // Calc normal
+    normalEstimationHelper.compute(*cloud_normals);
+
+	ALICEVISION_LOG_TRACE("Normal Estimation is calculated");
+
+	//If normal point cloud is empty
+	if(cloud_normals->empty())
+    {
+        ALICEVISION_LOG_WARNING("No Normal were estimated!");
+	}
+
+	// set Normals array to particular size
+    m_Normals->reserve(pts->size());
+    m_Normals->resize_with(pts->size(), Point3d(0.0f, 0.0f, 0.0f));
+
+	ALICEVISION_LOG_TRACE("Starting Remapping Normals back to AliceVision Format");
+
+    // remap it back to aliceVision formats
+    for(int i = 0; i < pts->size(); i++)
+    {
+        // get PCL normal format
+        pcl::Normal& calculatedNormal = cloud_normals->at(i);
+
+        // convert it to AliceiVision format
+        Point3d* normalPoint =
+            new Point3d(calculatedNormal.normal_x, calculatedNormal.normal_y, calculatedNormal.normal_z);
+
+        (*m_Normals)[i] = *normalPoint;
+    }
+}
+
 StaticVector<Point3d>* Mesh::computeNormalsForPts()
 {
     StaticVector<StaticVector<int>*>* ptsNeighTris = getPtsNeighborTriangles();
@@ -1352,7 +1439,7 @@ StaticVector<Point3d>* Mesh::computeNormalsForPts()
     smoothNormals(nms, ptsNeighPts);
     deleteArrayOfArrays<int>(&ptsNeighTris);
     deleteArrayOfArrays<int>(&ptsNeighPts);
-    m_Normals = nms;
+    m_Normals->swap(*nms);
     return nms;
 }
 

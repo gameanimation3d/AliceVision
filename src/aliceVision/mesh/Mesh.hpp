@@ -111,7 +111,7 @@ public:
     StaticVector<Point3d>* pts = nullptr;
     StaticVector<Mesh::triangle>* tris = nullptr;
 
-    StaticVector<Point3d>* m_Normals = nullptr;
+    std::shared_ptr<StaticVector<Point3d>> m_Normals;
 
     Mesh();
     ~Mesh();
@@ -168,6 +168,8 @@ public:
     Point3d computeTriangleCenterOfGravity(int idTri) const;
     double computeTriangleMaxEdgeLength(int idTri) const;
     double computeTriangleMinEdgeLength(int idTri) const;
+
+	void computeNormalsWithPCA(float searchRadius = 0.03);
 
     void removeFreePointsFromMesh(StaticVector<int>** out_ptIdToNewPtId = nullptr);
 
