@@ -21,6 +21,10 @@
 #include <pcl/features/normal_3d.h>
 #include <pcl/point_cloud.h>
 #include <pcl/search/kdtree.h>
+#include <pcl/io/ply_io.h>
+#include <pcl/io/ply/ply_parser.h>
+
+
 
 namespace aliceVision
 {
@@ -75,13 +79,13 @@ void Mesh::saveToObj(const std::string& filename)
     {
         ALICEVISION_LOG_WARNING("Export Normals were found");
 
-		for(const auto& normal : *m_Normals)
+        for(const auto& normal : *m_Normals)
         {
             fprintf(f, "vn %f %f %f\n", normal.x, normal.y, normal.z);
         }
     }
     else
-	{
+    {
         ALICEVISION_LOG_WARNING("No Normals were found");
     }
 
@@ -1362,36 +1366,46 @@ void Mesh::computeNormalsWithPCA(float searchRadius)
 {
     // Generate PCL point cloud data remap data
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    cloud->resize(pts->size());
 
+	//std::string filePath = "M:\Repo\GitRepos\SFMVisualizer_dev_Triangulation\external\SFM\aliceVision\data\cloud_and_poses.ply";
+ //   pcl::PointCloud<pcl::PointXYZ> clour = pcl::PointCloud<pcl::PointXYZ>();
+
+	//pcl::io::loadPLYFile(filePath, clour);
+
+	int pointcloudSize = 10409;
+
+    cloud->resize(pointcloudSize);
 
     // iterate through AliceVision Points and add point into PCL pointcloud data format
-    for(int i = 0; i < pts->size(); i++)
+    for(int i = 0; i < pointcloudSize; i++)
     {
-        Point3d& point3D = (*pts)[i];
+        //Point3d& point3D = (*pts)[i];
 
-		cloud->points[i].x = point3D.x;
-        cloud->points[i].y = point3D.y;
-        cloud->points[i].z = point3D.z;
+		cloud->points[i].x = 0.0f;
+        cloud->points[i].y = 0.0f;
+        cloud->points[i].z = 0.0f;
 
-        //pcl::PointXYZ point = pcl::PointXYZ(point3D.x, point3D.y, point3D.z);
-        //cloud->push_back(point);
+        //cloud->points[i].x = point3D.x;
+        //cloud->points[i].y = point3D.y;
+        //cloud->points[i].z = point3D.z;
+
+        // pcl::PointXYZ point = pcl::PointXYZ(point3D.x, point3D.y, point3D.z);
+        // cloud->push_back(point);
     }
 
-	ALICEVISION_LOG_TRACE("PCL Pointcloud has been created with point of AliceVision Data");
+    ALICEVISION_LOG_TRACE("PCL Pointcloud has been created with point of AliceVision Data");
 
     // Create the normal estimation class, and pass the input dataset to it
-    //pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> normalEstimationHelper;
+    // pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> normalEstimationHelper;
     pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimationHelper;
     normalEstimationHelper.setInputCloud(cloud);
 
     // calc kd tree
     pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
     normalEstimationHelper.setSearchMethod(tree);
-    tree->setInputCloud(cloud);
+    // tree->setInputCloud(cloud);
 
-	ALICEVISION_LOG_TRACE("PCL KD-Tree has been calculated");
-
+    ALICEVISION_LOG_TRACE("PCL KD-Tree has been calculated");
 
     // Output datasets
     pcl::PointCloud<pcl::Normal>::Ptr cloud_normals(new pcl::PointCloud<pcl::Normal>);
@@ -1401,20 +1415,19 @@ void Mesh::computeNormalsWithPCA(float searchRadius)
 
     // Calc normal
     normalEstimationHelper.compute(*cloud_normals);
+    ALICEVISION_LOG_TRACE("Normal Estimation is calculated");
 
-	ALICEVISION_LOG_TRACE("Normal Estimation is calculated");
-
-	//If normal point cloud is empty
-	if(cloud_normals->empty())
+    // If normal point cloud is empty
+    if(cloud_normals->empty())
     {
         ALICEVISION_LOG_WARNING("No Normal were estimated!");
-	}
+    }
 
-	// set Normals array to particular size
+    // set Normals array to particular size
     m_Normals->reserve(pts->size());
     m_Normals->resize_with(pts->size(), Point3d(0.0f, 0.0f, 0.0f));
 
-	ALICEVISION_LOG_TRACE("Starting Remapping Normals back to AliceVision Format");
+    ALICEVISION_LOG_TRACE("Starting Remapping Normals back to AliceVision Format");
 
     // remap it back to aliceVision formats
     for(int i = 0; i < pts->size(); i++)
@@ -2835,11 +2848,11 @@ int Mesh::checkForWindingIssueInMesh()
 {
     int counterOfConflicts = 0;
 
-    //StaticVector<Mesh::triangle*> testTriangle;
+    // StaticVector<Mesh::triangle*> testTriangle;
 
-    //testTriangle.push_back(new triangle(1, 2, 3));
-    //testTriangle.push_back(new triangle(3, 2, 4));
-    //testTriangle.push_back(new triangle(3, 5, 4));
+    // testTriangle.push_back(new triangle(1, 2, 3));
+    // testTriangle.push_back(new triangle(3, 2, 4));
+    // testTriangle.push_back(new triangle(3, 5, 4));
 
     for(int i = 1; i < tris->size(); i++)
     {
