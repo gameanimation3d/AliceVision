@@ -23,24 +23,9 @@ set(mesh_files_sources
   UVAtlas.cpp
 )
 
-find_package( PCL 1.8 REQUIRED )
+find_package(CGAL REQUIRED)
+include_directories(${CGAL_MODULES_DIR})
 
-if( PCL_FOUND )
-  # [C/C++]>[General]>[Additional Include Directories]
-  include_directories( ${PCL_INCLUDE_DIRS} )
-
-  # [C/C++]>[Preprocessor]>[Preprocessor Definitions]
-  add_definitions( ${PCL_DEFINITIONS} )
-  
-  # For Use Not PreCompiled Features 
-  #add_definitions( -DPCL_NO_PRECOMPILE )
-
-  # [Linker]>[General]>[Additional Library Directories]
-  link_directories( ${PCL_LIBRARY_DIRS} )
-
-  # [Linker]>[Input]>[Additional Dependencies]
-  #target_link_libraries(aliceVision_mesh ${PCL_LIBRARIES} )
-endif()
 
 alicevision_add_library(aliceVision_mesh
   SOURCES ${mesh_files_headers} ${mesh_files_sources}
@@ -50,10 +35,9 @@ alicevision_add_library(aliceVision_mesh
     Geogram::geogram
     ${Boost_FILESYSTEM_LIBRARY}
   PRIVATE_LINKS
-  	${PCL_LIBRARIES}
+  	CGAL::CGAL
     aliceVision_system
 )
 
-message(${PCL_LIBRARIES})
 
 

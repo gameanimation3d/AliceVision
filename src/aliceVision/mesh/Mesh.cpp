@@ -16,15 +16,29 @@
 #include <map>
 #include "aliceVision/sfmData/SfMData.hpp"
 
-#include <pcl/point_types.h>
-#include <pcl/features/normal_3d_omp.h>
-#include <pcl/features/normal_3d.h>
-#include <pcl/point_cloud.h>
-#include <pcl/search/kdtree.h>
-#include <pcl/io/ply_io.h>
-#include <pcl/io/ply/ply_parser.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/compute_average_spacing.h>
+#include <CGAL/pca_estimate_normals.h>
+#include <CGAL/jet_estimate_normals.h>
+#include <CGAL/mst_orient_normals.h>
+#include <CGAL/property_map.h>
+#include <CGAL/IO/read_xyz_points.h>
+#include <CGAL/vcm_estimate_normals.h>
+#include <list>
+#include <utility>
 
-
+// Types
+typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
+typedef Kernel::Point_3 Point;
+typedef Kernel::Vector_3 Vector;
+// Point with normal vector stored in a std::pair.
+typedef std::pair<Point, Vector> PointVectorPair;
+// Concurrency
+#ifdef CGAL_LINKED_WITH_TBB
+typedef CGAL::Parallel_tag Concurrency_tag;
+#else
+typedef CGAL::Sequential_tag Concurrency_tag;
+#endif
 
 namespace aliceVision
 {
@@ -1365,29 +1379,27 @@ double Mesh::computeTriangleMinEdgeLength(int idTri) const
 void Mesh::computeNormalsWithPCA(float searchRadius)
 {
     // Generate PCL point cloud data remap data
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    std::list<PointVectorPair> points = std::list<PointVectorPair>();
 
-	//std::string filePath = "M:\Repo\GitRepos\SFMVisualizer_dev_Triangulation\external\SFM\aliceVision\data\cloud_and_poses.ply";
- //   pcl::PointCloud<pcl::PointXYZ> clour = pcl::PointCloud<pcl::PointXYZ>();
+    // CGAL::read_xyz_points(stream, std::back_inserter(points),
+    //                  CGAL::parameters::point_map(CGAL::First_of_pair_property_map<PointVectorPair>()));
 
-	//pcl::io::loadPLYFile(filePath, clour);
-
-	int pointcloudSize = 10409;
-
-    cloud->resize(pointcloudSize);
+    // points.resize(pts->size());
 
     // iterate through AliceVision Points and add point into PCL pointcloud data format
-    for(int i = 0; i < pointcloudSize; i++)
+    for(int i = 0; i < pts->size(); i++)
     {
-        //Point3d& point3D = (*pts)[i];
+        Point3d& point3D = (*pts)[i];
 
-		cloud->points[i].x = 0.0f;
-        cloud->points[i].y = 0.0f;
-        cloud->points[i].z = 0.0f;
+         Point pointCGLA = Point(point3D.x, point3D.y, point3D.z);
+         Vector vectorCGLA = Vector(0.0f, 0.0f, 0.0f);
+         PointVectorPair point = PointVectorPair(pointCGLA, vectorCGLA);
 
-        //cloud->points[i].x = point3D.x;
-        //cloud->points[i].y = point3D.y;
-        //cloud->points[i].z = point3D.z;
+        //point.first.x() = point3D.x;
+        //point.first.y = point3D.y;
+        //point.first.z = point3D.z;
+
+        points.push_back(point);
 
         // pcl::PointXYZ point = pcl::PointXYZ(point3D.x, point3D.y, point3D.z);
         // cloud->push_back(point);
@@ -1395,30 +1407,53 @@ void Mesh::computeNormalsWithPCA(float searchRadius)
 
     ALICEVISION_LOG_TRACE("PCL Pointcloud has been created with point of AliceVision Data");
 
-    // Create the normal estimation class, and pass the input dataset to it
-    // pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> normalEstimationHelper;
-    pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimationHelper;
-    normalEstimationHelper.setInputCloud(cloud);
+    // Estimates normals direction.
+    // Note: pca_estimate_normals() requiresa range of points
+    // as well as property maps to access each point's position and normal.
+    const int nb_neighbors = 18; // K-nearest neighbors = 3 rings
 
-    // calc kd tree
-    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
-    normalEstimationHelper.setSearchMethod(tree);
-    // tree->setInputCloud(cloud);
+	      CGAL::pca_estimate_normals<Concurrency_tag>(
+        points, nb_neighbors,
+        CGAL::parameters::point_map(CGAL::First_of_pair_property_map<PointVectorPair>())
+            .normal_map(CGAL::Second_of_pair_property_map<PointVectorPair>()));
 
-    ALICEVISION_LOG_TRACE("PCL KD-Tree has been calculated");
+		  	      //CGAL::jet_estimate_normals<Concurrency_tag>(
+           //   points, nb_neighbors,
+           //   CGAL::parameters::point_map(CGAL::First_of_pair_property_map<PointVectorPair>())
+           //       .normal_map(CGAL::Second_of_pair_property_map<PointVectorPair>()));
 
-    // Output datasets
-    pcl::PointCloud<pcl::Normal>::Ptr cloud_normals(new pcl::PointCloud<pcl::Normal>);
+	//CGAL::vcm_estimate_normals<Concurrency_tag>(
+ //       points, nb_neighbors, nb_neighbors,
+ //       CGAL::parameters::point_map(CGAL::First_of_pair_property_map<PointVectorPair>())
+ //           .normal_map(CGAL::Second_of_pair_property_map<PointVectorPair>())
+ //                     );
 
-    // Use all neighbors in a sphere of radius 3cm
-    normalEstimationHelper.setRadiusSearch(searchRadius);
+				      ALICEVISION_LOG_TRACE("Normal are estimated");
 
-    // Calc normal
-    normalEstimationHelper.compute(*cloud_normals);
-    ALICEVISION_LOG_TRACE("Normal Estimation is calculated");
+
+    //// First compute a spacing using the K parameter
+    //double spacing = CGAL::compute_average_spacing<Concurrency_tag>(
+    //    points, nb_neighbors, CGAL::parameters::point_map(CGAL::First_of_pair_property_map<PointVectorPair>()));
+    //// Then, estimate normals with a fixed radius
+    //CGAL::pca_estimate_normals<Concurrency_tag>(
+    //    points,
+    //    0, // when using a neighborhood radius, K=0 means no limit on the number of neighbors returns
+    //    CGAL::parameters::point_map(CGAL::First_of_pair_property_map<PointVectorPair>())
+    //        .normal_map(CGAL::Second_of_pair_property_map<PointVectorPair>())
+    //        .neighbor_radius(2. * spacing)); // use 2*spacing as neighborhood radius
+
+    // Orients normals.
+    // Note: mst_orient_normals() requires a range of points
+    // as well as property maps to access each point's position and normal.
+    std::list<PointVectorPair>::iterator unoriented_points_begin =
+        CGAL::mst_orient_normals(points, nb_neighbors,
+                                 CGAL::parameters::point_map(CGAL::First_of_pair_property_map<PointVectorPair>())
+                                     .normal_map(CGAL::Second_of_pair_property_map<PointVectorPair>()));
+	
+	ALICEVISION_LOG_INFO("Amount of Normal couldn't be oriented " + std::distance(points.begin(), unoriented_points_begin));
 
     // If normal point cloud is empty
-    if(cloud_normals->empty())
+    if(points.empty())
     {
         ALICEVISION_LOG_WARNING("No Normal were estimated!");
     }
@@ -1429,17 +1464,25 @@ void Mesh::computeNormalsWithPCA(float searchRadius)
 
     ALICEVISION_LOG_TRACE("Starting Remapping Normals back to AliceVision Format");
 
+    std::list<PointVectorPair>::iterator pointItr;
+	int loopIndex = 0;
+
     // remap it back to aliceVision formats
-    for(int i = 0; i < pts->size(); i++)
+    for(pointItr = points.begin(); pointItr != points.end(); ++pointItr)
     {
         // get PCL normal format
-        pcl::Normal& calculatedNormal = cloud_normals->at(i);
+
+
+        Vector calculatedNormal = pointItr->second;
+
+		float x = pointItr->second.x();
 
         // convert it to AliceiVision format
-        Point3d* normalPoint =
-            new Point3d(calculatedNormal.normal_x, calculatedNormal.normal_y, calculatedNormal.normal_z);
+        Point3d* normalPoint = new Point3d(x,pointItr->second.y(), pointItr->second.z());
 
-        (*m_Normals)[i] = *normalPoint;
+        (*m_Normals)[loopIndex] = *normalPoint;
+
+        loopIndex++;
     }
 }
 
